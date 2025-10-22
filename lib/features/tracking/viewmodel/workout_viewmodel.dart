@@ -2,13 +2,13 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
-import '../../../data/repositories/workout_repository.dart';
-import '../../../data/repositories/storage_repository.dart';
-import '../../../data/models/workout_model.dart';
+import '../../../../data/repositories/workout_repository.dart';
+import '../../../../data/repositories/storage_repository.dart';
+import '../../../../data/models/workout_model.dart';
 
 enum ViewState { idle, loading, success, error }
 
-class WorkoutViewmodel extends ChangeNotifier{
+class WorkoutViewModel extends ChangeNotifier{
     final WorkoutRepository _workoutRepository = WorkoutRepository();
     final StorageRepository _storageRepository = StorageRepository();
 

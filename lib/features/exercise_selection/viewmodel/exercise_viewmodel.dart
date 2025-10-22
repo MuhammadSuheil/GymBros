@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../../data/models/exercise_model.dart';
-import '../../../data/repositories/exercise_repository.dart';
+import '../../../../data/models/exercise_model.dart';
+import '../../../../data/repositories/exercise_repository.dart';
 
 class ExerciseViewModel extends ChangeNotifier {
   final ExerciseRepository _repository = ExerciseRepository();
