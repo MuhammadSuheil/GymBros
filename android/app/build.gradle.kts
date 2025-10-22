@@ -11,6 +11,9 @@ dependencies {
   implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
 
 
+  implementation("androidx.multidex:multidex:2.0.1")
+
+
   // TODO: Add the dependencies for Firebase products you want to use
   // When using the BoM, don't specify versions in Firebase dependencies
   implementation("com.google.firebase:firebase-analytics")
@@ -39,10 +42,12 @@ android {
         applicationId = "com.sumhel.gymbros"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 23
+        multiDexEnabled = true
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
     }
 
     buildTypes {
