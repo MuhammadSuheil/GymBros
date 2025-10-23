@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import untuk InputFormatter
+import 'package:flutter/services.dart'; 
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
+import 'package:firebase_auth/firebase_auth.dart'; 
 import '../../../data/models/exercise_model.dart';
 import '../../../data/models/set_entry_model.dart';
 import '../../../data/models/workout_group_model.dart';
@@ -24,27 +24,26 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
   Timer? _timer;
   Duration _duration = Duration.zero;
   late DateTime _sessionStartTime;
-  bool _isInitialized = false; // Flag untuk menandai inisialisasi
+  bool _isInitialized = false; 
 
   @override
   void initState() {
     super.initState();
     _sessionStartTime = DateTime.now();
-    // --- PERBAIKAN CRASH: Tunda start timer sedikit ---
-    // Kadang initState berjalan terlalu cepat sebelum semua siap
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       if (mounted) { // Pastikan widget masih ada
+       if (mounted) { 
           _startTimer();
           setState(() {
-             _isInitialized = true; // Tandai inisialisasi selesai
+             _isInitialized = true; 
           });
        }
     });
-    // --- AKHIR PERBAIKAN CRASH ---
+    
   }
 
-  void _startTimer() { /* ... (sama) ... */
-    if (_timer != null && _timer!.isActive) return; // Hindari duplikasi timer
+  void _startTimer() {
+    if (_timer != null && _timer!.isActive) return; 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
@@ -55,14 +54,14 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
       }
     });
   }
-  String _formatDuration(Duration duration) { /* ... (sama) ... */
+  String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final hours = twoDigits(duration.inHours);
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     return "$hours:$minutes:$seconds";
   }
-  void _navigateAndAddExercise() async { /* ... (sama) ... */
+  void _navigateAndAddExercise() async {
     final selectedExercise = await Navigator.push<ExerciseModel>(
       context,
       MaterialPageRoute(builder: (context) => const ExerciseSelectionScreen()),
@@ -85,14 +84,14 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
       }
     }
   }
-  void _addSetToGroup(WorkoutGroup group) { /* ... (sama) ... */
+  void _addSetToGroup(WorkoutGroup group) {
      if (mounted) {
        setState(() {
          group.sets.add(SetEntry());
        });
      }
   }
-  void _deleteSetFromGroup(WorkoutGroup group, SetEntry setToDelete) { /* ... (sama) ... */
+  void _deleteSetFromGroup(WorkoutGroup group, SetEntry setToDelete) {
      if (mounted) {
        setState(() {
          setToDelete.repsController.dispose();
@@ -104,7 +103,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        });
      }
   }
-  void _deleteWorkoutGroup(WorkoutGroup groupToDelete) { /* ... (sama) ... */
+  void _deleteWorkoutGroup(WorkoutGroup groupToDelete) {
      if (mounted) {
        setState(() {
          for (var set in groupToDelete.sets) {
@@ -115,7 +114,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        });
      }
   }
-  void _replaceExercise(WorkoutGroup groupToReplace) async { /* ... (sama) ... */
+  void _replaceExercise(WorkoutGroup groupToReplace) async {
      final newSelectedExercise = await Navigator.push<ExerciseModel>(
        context,
        MaterialPageRoute(builder: (context) => const ExerciseSelectionScreen()),
@@ -142,7 +141,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        });
      }
   }
-  void _saveWorkoutSession() async { /* ... (sama) ... */
+  void _saveWorkoutSession() async {
      final viewModel = Provider.of<WorkoutViewModel>(context, listen: false);
      viewModel.resetErrorState();
 
@@ -231,7 +230,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
   }
 
   @override
-  void dispose() { /* ... (sama) ... */
+  void dispose() {
     _timer?.cancel();
     for (var group in _workoutGroups) {
       for (var set in group.sets) {
@@ -246,13 +245,13 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<WorkoutViewModel>();
 
-     // --- PERBAIKAN CRASH: Tampilkan loading jika belum inisialisasi ---
+     
      if (!_isInitialized) {
        return const Scaffold(body: Center(child: CircularProgressIndicator()));
      }
-     // --- AKHIR PERBAIKAN CRASH ---
+     
 
-    return Scaffold( /* ... (sisanya sama) ... */
+    return Scaffold(
       appBar: AppBar(
         title: const Text('Mulai Latihan'),
         actions: [
@@ -337,8 +336,8 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
   }
 }
 
-// Widget WorkoutGroupTile (sama)
-class WorkoutGroupTile extends StatelessWidget { /* ... (sama) ... */
+
+class WorkoutGroupTile extends StatelessWidget {
   final WorkoutGroup group;
   final VoidCallback onAddSet;
   final ValueChanged<SetEntry> onDeleteSet;
@@ -472,8 +471,8 @@ class WorkoutGroupTile extends StatelessWidget { /* ... (sama) ... */
   }
 }
 
-// Widget SetRow (sama)
-class SetRow extends StatelessWidget { /* ... (sama) ... */
+
+class SetRow extends StatelessWidget {
   final SetEntry setEntry;
   final int setNumber;
   final ValueChanged<bool> onToggleComplete;

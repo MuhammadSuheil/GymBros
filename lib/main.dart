@@ -9,7 +9,7 @@ import 'features/tracking/viewmodel/workout_viewmodel.dart';
 import 'features/exercise_selection/viewmodel/exercise_viewmodel.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
 
-import 'features/tracking/view/workout_tracking_screen.dart'; // Ganti ke Home nanti
+import 'features/main_screen/main_screen.dart'; // Ganti ke Home nanti
 import 'features/auth/view/login_screen.dart';
 
 const supabaseUrl = 'https://tbyjchwkedxhgkdefrco.supabase.co';
@@ -27,14 +27,11 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // Sediakan AuthViewModel
         ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        // Sediakan stream User? menggunakan StreamProvider
         StreamProvider<fb.User?>.value(
-          value: fb.FirebaseAuth.instance.authStateChanges(), // Sumber stream
-          initialData: null, // Nilai awal saat stream belum mengirim data
+          value: fb.FirebaseAuth.instance.authStateChanges(), 
+          initialData: null, 
         ),
-        // Provider lainnya
         ChangeNotifierProvider(create: (context) => WorkoutViewModel()),
         ChangeNotifierProvider(
           create: (context) => ExerciseViewModel()..fetchInitialExercises(),
@@ -53,7 +50,7 @@ class MyAppEntryPoint extends StatelessWidget {
     return MaterialApp(
        debugShowCheckedModeBanner: false,
        title: 'GymBros',
-       theme: ThemeData( /* ... Theme sama ... */
+       theme: ThemeData( 
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
           inputDecorationTheme: const InputDecorationTheme(
@@ -67,13 +64,11 @@ class MyAppEntryPoint extends StatelessWidget {
              )
           )
        ),
-       home: const AuthWrapper(), // Tetap mulai dari AuthWrapper
+       home: const AuthWrapper(), 
     );
   }
 }
 
-
-// --- PERUBAHAN: AuthWrapper sekarang menggunakan context.watch ---
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -88,18 +83,9 @@ class AuthWrapper extends StatelessWidget {
 
 
      if (currentUser != null) {
-       print("[AuthWrapper] State: User logged in (${currentUser.uid}), showing Main App (TEMPORARY).");
-       // --- PERUBAHAN ISOLASI CRASH ---
-       // Ganti WorkoutTrackingScreen dengan Scaffold sederhana
-       return Scaffold(
-          appBar: AppBar(title: const Text("Berhasil Login!")),
-          body: Center(child: Text("Welcome User: ${currentUser.uid}")),
-          floatingActionButton: FloatingActionButton( // Tombol Logout sementara
-            onPressed: () => context.read<AuthViewModel>().signOut(),
-            tooltip: 'Logout',
-            child: const Icon(Icons.logout),
-          ),
-       );
+       print("[AuthWrapper] State: User logged in (${currentUser.uid}), showing MainScreen.");
+       // --- PERUBAHAN: Arahkan ke MainScreen ---
+       return const MainScreen();
        // --- AKHIR PERUBAHAN ---
      } else {
        print("[AuthWrapper] State: No user logged in, showing LoginScreen.");

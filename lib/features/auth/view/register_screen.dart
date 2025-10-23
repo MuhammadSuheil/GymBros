@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
+import 'package:firebase_auth/firebase_auth.dart'; 
 import 'login_screen.dart';
 import '../viewmodel/auth_viewmodel.dart';
 
@@ -36,24 +36,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-
       if (success && mounted) {
         print("[RegisterScreen] Registration success. Signing out user before showing dialog...");
-
-        // --- PERUBAHAN KRUSIAL: Logout user setelah register ---
         try {
           await FirebaseAuth.instance.signOut();
           print("[RegisterScreen] User signed out successfully after registration.");
         } catch (e) {
-           print("[RegisterScreen] Error signing out after registration: $e");
-           // Pertimbangkan untuk menampilkan error jika logout gagal,
-           // tapi untuk alur utama, kita tetap lanjut ke dialog & login
+           print("[RegisterScreen] Error signing out after registration: $e");   
         }
-        // --- Akhir Perubahan Krusial ---
-
-
-        // Tampilkan dialog sukses
-        showDialog( /* ... (Dialog sama seperti sebelumnya) ... */
+        showDialog(
           context: context,
           barrierDismissible: false,
           builder: (BuildContext dialogContext) {
@@ -79,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextButton(
                   child: const Text('OK'),
                   onPressed: () {
-                    Navigator.of(dialogContext).pop(); // Tutup dialog
+                    Navigator.of(dialogContext).pop(); 
                     if (mounted) {
                        Navigator.pushReplacement(
                           context,
@@ -98,10 +89,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthViewModel>( /* ... (Consumer sama) ... */
+    return Consumer<AuthViewModel>(
       builder: (context, viewModel, child) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (viewModel.state == AuthState.Error && viewModel.errorMessage.isNotEmpty) {
@@ -112,10 +102,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           }
         });
 
-        return Scaffold( /* ... (UI sama) ... */
+        return Scaffold(
            appBar: AppBar( title: const Text('Daftar Akun GymBros'), automaticallyImplyLeading: false,),
            body: Center( child: SingleChildScrollView( padding: const EdgeInsets.all(24.0),
-              child: Form( key: _formKey, child: Column( /* ... form fields sama ... */
+              child: Form( key: _formKey, child: Column(
                    children: [
                     Text( 'Buat Akun Baru', style: Theme.of(context).textTheme.headlineMedium, textAlign: TextAlign.center,),
                     const SizedBox(height: 32),

@@ -17,11 +17,11 @@ class ExerciseDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar Latihan
+            
             Center(
               child: Image.network(
                 exercise.imageUrl,
-                height: 250, // Atur tinggi gambar
+                height: 250, 
                 fit: BoxFit.contain,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
@@ -39,21 +39,17 @@ class ExerciseDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Detail Latihan
             _buildDetailRow('Target Otot:', exercise.target ?? 'N/A'),
             _buildDetailRow('Alat:', exercise.equipment ?? 'N/A'),
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-
-            // Instruksi
             Text(
               'Instruksi:',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 10),
-            // Tampilkan instruksi sebagai daftar bernomor
+            
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -77,7 +73,6 @@ class ExerciseDetailScreen extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk baris detail
   Widget _buildDetailRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
