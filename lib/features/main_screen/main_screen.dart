@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Nanti untuk logout
-// Import semua layar utama
+import 'package:provider/provider.dart'; 
 import '../home/view/home_screen.dart';
 import '../history/view/history_screen.dart';
-import '../tracking/view/workout_tracking_screen.dart'; // Layar tracking kita
+import '../tracking/view/workout_tracking_screen.dart'; 
 import '../streak/view/streak_screen.dart';
 import '../profile/view/profile_screen.dart';
 // import '../auth/viewmodel/auth_viewmodel.dart'; // Nanti untuk logout
@@ -16,21 +15,18 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0; // Index layar yang aktif
+  int _selectedIndex = 0; 
 
-  // Daftar layar sesuai urutan navbar (index 2 akan di-handle khusus)
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     HistoryScreen(),
-    Placeholder(), // Placeholder untuk index 2 (tombol +)
+    Placeholder(), 
     StreakScreen(),
     ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
-    // Handle khusus untuk tombol tengah (+)
     if (index == 2) {
-      // Langsung navigasi ke WorkoutTrackingScreen
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const WorkoutTrackingScreen()),
@@ -46,14 +42,13 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        // Tampilkan layar yang sesuai dengan index terpilih
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home), // Icon saat aktif
+            activeIcon: Icon(Icons.home), 
             label: 'Home',
           ),
           const BottomNavigationBarItem(
@@ -61,7 +56,7 @@ class _MainScreenState extends State<MainScreen> {
             activeIcon: Icon(Icons.history),
             label: 'History',
           ),
-          // Item tengah sengaja dikosongi labelnya & icon berbeda
+
           BottomNavigationBarItem(
             icon: Container(
               padding: const EdgeInsets.all(10),
@@ -71,7 +66,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               child: const Icon(Icons.add, color: Colors.white, size: 30),
             ),
-            label: '', // Kosongkan label
+            label: '', 
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.local_fire_department_outlined),
@@ -85,12 +80,11 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).primaryColor, // Warna item aktif
-        unselectedItemColor: Colors.grey, // Warna item non-aktif
-        showUnselectedLabels: true, // Tampilkan label meskipun tidak aktif
+        selectedItemColor: Theme.of(context).primaryColor, 
+        unselectedItemColor: Colors.grey, 
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed, // Agar semua item terlihat
-        elevation: 8.0, // Beri sedikit shadow
+        type: BottomNavigationBarType.fixed, 
+        elevation: 8.0, 
       ),
     );
   }
