@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../data/models/exercise_model.dart'; 
 import '../viewmodel/exercise_viewmodel.dart';
 
 class ExerciseSelectionScreen extends StatefulWidget {
@@ -62,12 +63,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
               }
 
               final exercise = viewModel.exercises[index];
-              
-              //debug
-              if (index == 0) { 
-                print('[DEBUG] Image URL: ${exercise.imageUrl}');
-              }
-              
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 elevation: 3,
@@ -84,7 +80,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
                         return const Center(child: CircularProgressIndicator());
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.error);
+                        return const Icon(Icons.image_not_supported);
                       },
                     ),
                   ),
@@ -92,9 +88,9 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
                     exercise.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('${exercise.equipment}'),
+                  subtitle: Text('${exercise.target ?? 'N/A'} | ${exercise.equipment ?? 'N/A'}'),
                   onTap: () {
-                    print('Memilih: ${exercise.name}');
+                    Navigator.of(context).pop(exercise);
                   },
                 ),
               );
@@ -105,3 +101,4 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
     );
   }
 }
+
