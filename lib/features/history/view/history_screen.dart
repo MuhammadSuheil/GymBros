@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Untuk format tanggal
+import 'package:intl/intl.dart'; 
 import 'package:provider/provider.dart';
 import '../viewmodel/history_viewmodel.dart';
-// Import model sesi untuk tipe data yang jelas
 import '../../../data/models/workout_session_model.dart'; 
 
 class HistoryScreen extends StatefulWidget {
@@ -27,7 +26,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riwayat Latihan'),
-        // Tombol refresh opsional
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -48,29 +46,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
              return const Center(child: Text('Belum ada riwayat latihan.', style: TextStyle(fontSize: 18, color: Colors.grey),),);
           }
 
-          // --- IMPLEMENTASI ListView.builder ---
+
           return ListView.builder(
             itemCount: viewModel.sessions.length,
             itemBuilder: (context, index) {
-              // Ambil data sesi untuk item ini
               final WorkoutSessionModel session = viewModel.sessions[index];
-
-              // Format tanggal dan waktu
               final formattedDate = DateFormat('EEEE, d MMM yyyy', 'id_ID').format(session.startTime);
               final formattedTime = DateFormat('HH:mm', 'id_ID').format(session.startTime);
 
-              // Buat Card untuk setiap sesi
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                elevation: 3, // Beri sedikit bayangan
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), // Sudut rounded
+                elevation: 3, 
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), 
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
                   title: Text(
-                    formattedDate, // Tampilkan tanggal sesi
+                    formattedDate, 
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  subtitle: Padding( // Tambahkan padding agar tidak terlalu mepet
+                  subtitle: Padding( 
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Column(
                        crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +72,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                          Text('Mulai: $formattedTime'),
                          Text('Durasi: ${session.formattedDuration}'),
                          const SizedBox(height: 6),
-                         // Tampilkan ringkasan latihan
                          Text(
                            'Latihan: ${session.exercisesSummary}',
                            maxLines: 1,
@@ -88,9 +81,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                        ],
                     ),
                   ),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.grey), // Icon penanda
+                  trailing: const Icon(Icons.chevron_right, color: Colors.grey), 
                   onTap: () {
-                    // TODO: Navigasi ke halaman detail sesi latihan
                     print('Tap on session ID: ${session.id}');
                      ScaffoldMessenger.of(context).showSnackBar(
                        const SnackBar(content: Text('Halaman detail sesi belum dibuat.')),
