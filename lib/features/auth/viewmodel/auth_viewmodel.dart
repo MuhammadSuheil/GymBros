@@ -15,10 +15,6 @@ class AuthViewModel extends ChangeNotifier {
 
   fb.User? get currentUser => _authRepository.currentUser;
 
-  // Listener dihapus dari konstruktor karena kita akan handle navigasi secara manual
-  // AuthViewModel() { ... listener dihapus ... }
-
-
   void _setState(AuthState newState) {
     if (_state != newState) {
       _state = newState;
@@ -27,33 +23,30 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // --- PERUBAHAN: Kembalikan bool ---
   Future<bool> signInWithEmail({
     required String email,
     required String password,
   }) async {
     print("[AuthViewModel] Attempting sign in for: $email");
     _setState(AuthState.Loading);
-    bool success = false; // Flag hasil
+    bool success = false; 
     try {
       await _authRepository.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       print("[AuthViewModel] Sign in successful for: $email");
-      success = true; // Set flag
+      success = true; 
       _setState(AuthState.Idle);
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       print("[AuthViewModel] Sign in failed: $_errorMessage");
       _setState(AuthState.Error);
-      success = false; // Set flag
+      success = false; 
     }
-    return success; // Kembalikan hasil
+    return success; 
   }
-  // --- Akhir Perubahan ---
-
-  // --- PERUBAHAN: Kembalikan bool ---
+  
   Future<bool> createUserWithEmail({
     required String email,
     required String password,
@@ -77,7 +70,7 @@ class AuthViewModel extends ChangeNotifier {
     }
      return success;
   }
-  // --- Akhir Perubahan ---
+  
 
 
    void resetErrorState() {
@@ -86,14 +79,14 @@ class AuthViewModel extends ChangeNotifier {
       }
    }
 
-  Future<void> signOut() async { /* ... (fungsi signOut sama) ... */
+  Future<void> signOut() async {
     print("[AuthViewModel] Attempting sign out...");
     _setState(AuthState.Loading);
     try {
       await _authRepository.signOut();
        print("[AuthViewModel] Sign out successful.");
        _setState(AuthState.Idle);
-       // Navigasi setelah logout akan ditangani AuthWrapper
+       
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
        print("[AuthViewModel] Sign out failed: $_errorMessage");

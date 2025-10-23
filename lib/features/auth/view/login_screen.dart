@@ -23,38 +23,33 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // --- PERUBAHAN: Handle navigasi setelah sukses ---
-  void _handleLogin(BuildContext context) async { // Tambah async
+  void _handleLogin(BuildContext context) async { 
     print("[LoginScreen] Login button pressed.");
     final viewModel = Provider.of<AuthViewModel>(context, listen: false);
     viewModel.resetErrorState();
 
     if (_formKey.currentState!.validate()) {
        print("[LoginScreen] Form valid, calling ViewModel...");
-       // Panggil ViewModel dan TUNGGU hasilnya
+       
        bool success = await viewModel.signInWithEmail(
          email: _emailController.text.trim(),
          password: _passwordController.text.trim(),
        );
-
-        // Jika berhasil, navigasi ke layar utama
        if (success && mounted) {
           print("[LoginScreen] Login success, navigating to Main App.");
           Navigator.pushReplacement(
              context,
-             MaterialPageRoute(builder: (context) => const WorkoutTrackingScreen()) // Ganti ke HomeScreen nanti
+             MaterialPageRoute(builder: (context) => const WorkoutTrackingScreen()) 
           );
        }
-       // Jika gagal, Snackbar akan ditampilkan oleh Consumer
     } else {
        print("[LoginScreen] Form invalid.");
     }
   }
-  // --- Akhir Perubahan ---
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthViewModel>( /* ... (Consumer sama) ... */
+    return Consumer<AuthViewModel>(
       builder: (context, viewModel, child) {
          WidgetsBinding.instance.addPostFrameCallback((_) {
           if (viewModel.state == AuthState.Error && viewModel.errorMessage.isNotEmpty) {
@@ -64,11 +59,10 @@ class _LoginScreenState extends State<LoginScreen> {
             viewModel.resetErrorState();
           }
         });
-
-        return Scaffold( /* ... (UI sama) ... */
+        return Scaffold(
           appBar: AppBar( title: const Text('Login GymBros'), automaticallyImplyLeading: false,),
           body: Center( child: SingleChildScrollView( padding: const EdgeInsets.all(24.0),
-              child: Form( key: _formKey, child: Column( /* ... form fields sama ... */
+              child: Form( key: _formKey, child: Column(
                    children: [
                     Text( 'Selamat Datang Kembali!', style: Theme.of(context).textTheme.headlineMedium, textAlign: TextAlign.center, ),
                     const SizedBox(height: 32),
