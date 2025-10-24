@@ -4,24 +4,24 @@ import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:intl/date_symbol_data_local.dart';
 
-// Import ViewModels
 import 'features/tracking/viewmodel/workout_viewmodel.dart';
 import 'features/exercise_selection/viewmodel/exercise_viewmodel.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
 import 'features/history/viewmodel/history_viewmodel.dart';
 
-// Import Screens
-import 'features/main_screen/main_screen.dart'; // Import MainScreen (yang punya navbar)
+import 'features/main_screen/main_screen.dart'; 
 import 'features/auth/view/login_screen.dart';
-// WorkoutTrackingScreen akan diakses dari MainScreen atau tombol +
-// import 'features/workout_tracking/view/workout_tracking_screen.dart'; 
 
 const supabaseUrl = 'https://tbyjchwkedxhgkdefrco.supabase.co';
 const supabaseKey = String.fromEnvironment('SUPABASE_KEY');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  await initializeDateFormatting('en_US', null);
+
   try {
      await sb.Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
      await Firebase.initializeApp(
@@ -30,10 +30,10 @@ void main() async {
   } catch (e) { print("Error initializing services: $e"); }
 
   runApp(
-    MultiProvider( // MultiProvider di level tertinggi
+    MultiProvider( 
       providers: [
         ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        StreamProvider<fb.User?>.value( // StreamProvider untuk status auth
+        StreamProvider<fb.User?>.value( 
           value: fb.FirebaseAuth.instance.authStateChanges(),
           initialData: null,
         ),
@@ -41,7 +41,7 @@ void main() async {
         ChangeNotifierProvider(
           create: (context) => ExerciseViewModel()..fetchInitialExercises(),
         ),
-        ChangeNotifierProvider(create: (context) => HistoryViewModel()), // HistoryViewModel tetap di sini
+        ChangeNotifierProvider(create: (context) => HistoryViewModel()),
       ],
       child: const MyAppEntryPoint(),
     ),
@@ -52,11 +52,10 @@ class MyAppEntryPoint extends StatelessWidget {
   const MyAppEntryPoint({super.key});
    @override
   Widget build(BuildContext context) {
-    // MaterialApp membungkus AuthWrapper
     return MaterialApp(
        debugShowCheckedModeBanner: false,
        title: 'GymBros',
-       theme: ThemeData( /* ... Theme sama ... */
+       theme: ThemeData( 
          primarySwatch: Colors.blue,
          visualDensity: VisualDensity.adaptivePlatformDensity,
          inputDecorationTheme: const InputDecorationTheme(
@@ -70,7 +69,7 @@ class MyAppEntryPoint extends StatelessWidget {
              )
           )
        ),
-       home: const AuthWrapper(), // Titik masuk tetap AuthWrapper
+       home: const AuthWrapper(),
     );
   }
 }
@@ -79,7 +78,6 @@ class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
    @override
   Widget build(BuildContext context) {
-     // Ambil status user dari StreamProvider
      final fb.User? user = context.watch<fb.User?>();
 
      print("[AuthWrapper] Build method called.");
@@ -88,13 +86,9 @@ class AuthWrapper extends StatelessWidget {
 
      if (user != null) {
        print("[AuthWrapper] State: User logged in (${user.uid}), showing MainScreen.");
-       // --- INI PERBAIKAN UTAMANYA ---
-       // Jika ada user, tampilkan MainScreen (yang punya navbar)
        return const MainScreen();
-       // --- AKHIR PERBAIKAN ---
      } else {
        print("[AuthWrapper] State: No user logged in, showing LoginScreen.");
-       // Jika tidak ada user (null), tampilkan LoginScreen
        return const LoginScreen();
      }
   }

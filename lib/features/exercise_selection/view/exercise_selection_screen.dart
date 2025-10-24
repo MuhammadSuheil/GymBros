@@ -37,7 +37,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pilih Latihan'),
+        title: const Text('Choose Exercise'),
       ),
       body: Consumer<ExerciseViewModel>(
         builder: (context, viewModel, child) {
@@ -46,7 +46,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
           }
 
           if (viewModel.exercises.isEmpty) {
-            return const Center(child: Text('Tidak ada data latihan.'));
+            return const Center(child: Text('There is no exercise data'));
           }
 
           return ListView.builder(

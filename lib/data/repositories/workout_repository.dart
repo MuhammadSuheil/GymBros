@@ -12,7 +12,7 @@ class WorkoutRepository {
     required Duration duration,
     required DateTime sessionStartTime,
   }) async {
-    if (setsData.isEmpty) { throw Exception('Tidak ada data set untuk disimpan.'); }
+    if (setsData.isEmpty) { throw Exception('There is not set to be saved'); }
     try {
       await _sessionsCollection.add({
         'userId': userId,
@@ -21,7 +21,7 @@ class WorkoutRepository {
         'durationSeconds': duration.inSeconds,
         'sets': setsData,
       });
-    } catch (e) { print('Error adding workout session: $e'); throw Exception('Gagal menyimpan sesi latihan.');}
+    } catch (e) { print('Error adding workout session: $e'); throw Exception('Error saving workout session');}
   }
 
   Future<List<WorkoutSessionModel>> getWorkoutSessions() async {
@@ -44,7 +44,7 @@ class WorkoutRepository {
           .toList();
     } catch (e) {
       print('[WorkoutRepository] Error fetching workout sessions: $e');
-      throw Exception('Gagal mengambil riwayat latihan.');
+      throw Exception('Error fetching Workout History');
     }
   }
 }

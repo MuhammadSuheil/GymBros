@@ -7,6 +7,8 @@ class WorkoutSessionModel {
   final DateTime endTime;
   final int durationSeconds;
   final List<dynamic> sets; 
+  final String? notes; 
+  final double? bodyWeight;
 
   WorkoutSessionModel({
     required this.id,
@@ -15,6 +17,8 @@ class WorkoutSessionModel {
     required this.endTime,
     required this.durationSeconds,
     required this.sets,
+    this.notes, 
+    this.bodyWeight,
   });
 
   factory WorkoutSessionModel.fromSnapshot(DocumentSnapshot doc) {

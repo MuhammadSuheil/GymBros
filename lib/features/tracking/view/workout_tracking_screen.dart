@@ -6,9 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../data/models/exercise_model.dart';
 import '../../../data/models/set_entry_model.dart';
 import '../../../data/models/workout_group_model.dart';
+import '../viewmodel/workout_viewmodel.dart';
 import '../../exercise_selection/view/exercise_selection_screen.dart';
 import '../../exercise_detail/view/exercise_detail_screen.dart';
-import '../viewmodel/workout_viewmodel.dart';
+import '../../workout_summary/view/workout_summary_screen.dart';
 
 class WorkoutTrackingScreen extends StatefulWidget {
   const WorkoutTrackingScreen({super.key});
@@ -71,7 +72,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
       bool groupExists = _workoutGroups.any((group) => group.exercise.id == selectedExercise.id);
       if (groupExists) {
          ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('${selectedExercise.name} sudah ada. Tambahkan set saja.'))
+           SnackBar(content: Text('${selectedExercise.name} is already added'))
          );
          int lastIndex = _workoutGroups.lastIndexWhere((group) => group.exercise.id == selectedExercise.id);
          WorkoutGroup targetGroup = _workoutGroups.firstWhere((group) => group.exercise.id == selectedExercise.id);
@@ -124,7 +125,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        bool newExerciseExists = _workoutGroups.any((group) => group.exercise.id == newSelectedExercise.id && group != groupToReplace);
         if (newExerciseExists) {
            ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('${newSelectedExercise.name} sudah ada dalam daftar.'))
+             SnackBar(content: Text('${newSelectedExercise.name} is already added'))
            );
            return;
         }
@@ -141,92 +142,70 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        });
      }
   }
-  void _saveWorkoutSession() async {
-     final viewModel = Provider.of<WorkoutViewModel>(context, listen: false);
-     viewModel.resetErrorState();
-
+  void _finishWorkout() { // Ganti nama fungsi agar lebih jelas
+     // Validasi checklist dan data input
      bool allSetsCompleted = true;
-     for (var group in _workoutGroups) {
-       for (var setEntry in group.sets) {
-         if (!setEntry.isCompleted) {
-           allSetsCompleted = false;
-           break;
-         }
+     bool allValid = true;
+     List<Map<String, dynamic>> sessionData = [];
+
+      for (var group in _workoutGroups) {
+       for (int i = 0; i < group.sets.length; i++) {
+          final setEntry = group.sets[i];
+          if (!setEntry.isCompleted) {
+             allSetsCompleted = false;
+             break;
+          }
+          // Validasi input
+          final reps = int.tryParse(setEntry.repsController.text);
+          final weightText = setEntry.weightController.text.trim().replaceAll(',', '.');
+          final weight = double.tryParse(weightText);
+
+          if (setEntry.repsController.text.trim().isEmpty || weightText.isEmpty || reps == null || weight == null) {
+              allValid = false;
+              ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(content: Text('Invalid Reps/Weight data on: ${group.exercise.name} (Set ${i + 1})')),
+               );
+               break;
+          }
+           sessionData.add({ /* ... (data set sama) ... */
+             'exerciseId': group.exercise.id,
+             'exerciseName': group.exercise.name,
+             'setNumber': i + 1,
+             'reps': reps,
+             'weight': weight,
+             'isCompleted': setEntry.isCompleted,
+           });
        }
-       if (!allSetsCompleted) break;
+       if (!allSetsCompleted || !allValid) break;
      }
 
+     // Cek hasil validasi
      if (!allSetsCompleted) {
        ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('Harap checklist semua set yang sudah diselesaikan sebelum menyimpan.')),
+         const SnackBar(content: Text('Please press all the check button before submitting')),
        );
        return;
      }
-
-     List<Map<String, dynamic>> sessionData = [];
-     bool allValid = true;
-
-     for (var group in _workoutGroups) {
-       for (int i = 0; i < group.sets.length; i++) {
-         final setEntry = group.sets[i];
-         final reps = int.tryParse(setEntry.repsController.text);
-         final weightText = setEntry.weightController.text.trim().replaceAll(',', '.');
-         final weight = double.tryParse(weightText);
-
-         if (setEntry.repsController.text.trim().isEmpty || weightText.isEmpty || reps == null || weight == null) {
-            allValid = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(content: Text('Data Reps/Beban tidak valid pada: ${group.exercise.name} (Set ${i + 1})')),
-             );
-             break;
-         }
-         sessionData.add({
-           'exerciseId': group.exercise.id,
-           'exerciseName': group.exercise.name,
-           'setNumber': i + 1,
-           'reps': reps,
-           'weight': weight,
-           'isCompleted': setEntry.isCompleted,
-         });
-       }
-        if (!allValid) break;
+      if (!allValid || sessionData.isEmpty) {
+        if (sessionData.isEmpty && allValid && allSetsCompleted) { // Kasus jika belum ada set sama sekali
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add some exercise')));
+        }
+       return; // Error sudah ditampilkan sebelumnya jika !allValid
      }
 
-     if (allValid && sessionData.isNotEmpty) {
-       print("Mengirim data ke ViewModel: $sessionData");
-       bool success = await viewModel.saveWorkoutSession(
+
+    // Jika semua valid, navigasi ke Summary Screen
+    print("[TrackingScreen] Finishing workout, navigating to Summary...");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutSummaryScreen(
           setsData: sessionData,
           duration: _duration,
           sessionStartTime: _sessionStartTime,
-       );
-
-       if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text('Sesi latihan berhasil disimpan!'), duration: Duration(seconds: 2),),
-          );
-          await Future.delayed(const Duration(seconds: 1));
-          if (mounted) {
-             _duration = Duration.zero;
-             _workoutGroups.forEach((group) {
-                group.sets.forEach((set) {
-                   set.repsController.dispose();
-                   set.weightController.dispose();
-                });
-             });
-             _workoutGroups.clear();
-             Navigator.of(context).pop();
-          }
-       } else if (!success && mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('Gagal menyimpan: ${viewModel.errorMessage}')),
-         );
-       }
-
-     } else if (sessionData.isEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tidak ada latihan untuk disimpan.')),
-      );
-     }
+        ),
+      ),
+    );
   }
 
   @override
@@ -253,7 +232,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mulai Latihan'),
+        title: const Text('Start Workout'),
         actions: [
           Center(
             child: Padding(
@@ -276,7 +255,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
                         child: Text(
-                          'Tekan tombol "Tambah Latihan" di bawah untuk memulai.',
+                          'Press the "Start Workout" button down below to start',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16, color: Colors.grey),
                          ),
@@ -311,7 +290,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
               child: OutlinedButton.icon(
                 onPressed: _navigateAndAddExercise,
                 icon: const Icon(Icons.add),
-                label: const Text('Tambah Latihan'),
+                label: const Text('Add exercise'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50)
                 ),
@@ -322,11 +301,11 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                 child: ElevatedButton(
-                  onPressed: viewModel.state == ViewState.Loading ? null : _saveWorkoutSession,
+                  onPressed: viewModel.state == ViewState.Loading ? null : _finishWorkout,
                   style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
                   child: viewModel.state == ViewState.Loading
                     ? const CircularProgressIndicator(color: Colors.white,)
-                    : const Text('Selesai & Simpan Sesi'),
+                    : const Text('Finish & Save Session'),
                 ),
               ),
           ],
@@ -409,7 +388,7 @@ class WorkoutGroupTile extends StatelessWidget {
                         value: 'replace',
                         child: ListTile(
                           leading: Icon(Icons.repeat, size: 20),
-                          title: Text('Ganti Latihan'),
+                          title: Text('Replace Exercise'),
                           dense: true,
                         ),
                       ),
@@ -417,13 +396,13 @@ class WorkoutGroupTile extends StatelessWidget {
                         value: 'delete_all',
                         child: ListTile(
                           leading: Icon(Icons.delete_forever, color: Colors.redAccent, size: 20),
-                          title: Text('Hapus Semua Set'),
+                          title: Text('Delete all set'),
                           dense: true,
                         ),
                       ),
                     ],
                     icon: const Icon(Icons.more_vert, size: 20),
-                    tooltip: 'Opsi Latihan',
+                    tooltip: 'Exercise option',
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   )
@@ -513,22 +492,22 @@ class SetRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
+            flex: 3,
+            child: TextFormField(
+              controller: setEntry.weightController.text == '0.0' ? (TextEditingController()..text = '') : setEntry.weightController,
+              decoration: const InputDecoration(labelText: 'Weight (kg)', isDense: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: <TextInputFormatter>[ FilteringTextInputFormatter.allow(RegExp(r'^\d*[\.\,]?\d*')), ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             flex: 2,
             child: TextFormField(
               controller: setEntry.repsController,
               decoration: const InputDecoration(labelText: 'Reps', isDense: true),
               keyboardType: TextInputType.number,
               inputFormatters: <TextInputFormatter>[ FilteringTextInputFormatter.digitsOnly ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 3,
-            child: TextFormField(
-              controller: setEntry.weightController.text == '0.0' ? (TextEditingController()..text = '') : setEntry.weightController,
-              decoration: const InputDecoration(labelText: 'Beban (kg)', isDense: true),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: <TextInputFormatter>[ FilteringTextInputFormatter.allow(RegExp(r'^\d*[\.\,]?\d*')), ],
             ),
           ),
           const SizedBox(width: 8),
