@@ -1,8 +1,8 @@
-// lib/features/profile/view/profile_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Untuk logout
-import 'package:firebase_auth/firebase_auth.dart'; // Untuk ambil email
-import '../../auth/viewmodel/auth_viewmodel.dart'; // Import ViewModel
+import 'package:provider/provider.dart'; 
+import 'package:firebase_auth/firebase_auth.dart'; 
+import '../../auth/viewmodel/auth_viewmodel.dart'; 
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -10,11 +10,11 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
      final userEmail = FirebaseAuth.instance.currentUser?.email ?? 'Tidak Diketahui';
-     final authViewModel = context.read<AuthViewModel>(); // Ambil ViewModel
+     final authViewModel = context.read<AuthViewModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil Pengguna'),
+        title: const Text('User Profile'),
       ),
       body: Center(
         child: Padding(
@@ -34,9 +34,7 @@ class ProfileScreen extends StatelessWidget {
                   label: const Text('Logout'),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
                   onPressed: () {
-                     // Panggil fungsi signOut dari ViewModel
                      authViewModel.signOut();
-                     // AuthWrapper akan otomatis menangani navigasi ke LoginScreen
                   },
                )
              ],

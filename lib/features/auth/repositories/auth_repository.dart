@@ -23,7 +23,7 @@ class AuthRepository {
       throw Exception(_handleAuthError(e.code));
     } catch (e) {
       
-      throw Exception('Terjadi kesalahan saat login.');
+      throw Exception('There is an error while logging in');
     }
   }
 
@@ -41,7 +41,7 @@ class AuthRepository {
       
       throw Exception(_handleAuthError(e.code));
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat mendaftar.');
+      throw Exception('There is an error while registering');
     }
   }
   
@@ -49,26 +49,26 @@ class AuthRepository {
     try {
       await _firebaseAuth.signOut();
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat logout.');
+      throw Exception('There is an error while logging out');
     }
   }
 
   String _handleAuthError(String errorCode) {
     switch (errorCode) {
       case 'user-not-found':
-        return 'Email tidak terdaftar.';
+        return 'Email not registered';
       case 'wrong-password':
-        return 'Password salah.';
+        return 'Wrong Password';
       case 'invalid-email':
-        return 'Format email tidak valid.';
+        return 'Invalid email formal';
       case 'email-already-in-use':
-        return 'Email sudah digunakan oleh akun lain.';
+        return 'Email already in use';
       case 'weak-password':
-        return 'Password terlalu lemah.';
+        return 'password is too weak';
       case 'operation-not-allowed':
-         return 'Metode login ini tidak diizinkan.';
+         return 'Operation not allowed';
       default:
-        return 'Terjadi kesalahan autentikasi: $errorCode';
+        return 'There is an authentication error: $errorCode';
     }
   }
 }

@@ -1,4 +1,4 @@
-// lib/features/streak/view/streak_screen.dart
+
 import 'package:flutter/material.dart';
 
 class StreakScreen extends StatelessWidget {
@@ -8,15 +8,14 @@ class StreakScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Streak Latihan'),
+        title: const Text('Workout Streak'),
       ),
       body: const Center(
         child: Text(
-          'Fitur streak akan segera hadir!',
+          'Streak Coming soon!',
            style: TextStyle(fontSize: 18, color: Colors.grey),
         ),
       ),
-       // TODO: Implementasi logika & UI streak
     );
   }
 }

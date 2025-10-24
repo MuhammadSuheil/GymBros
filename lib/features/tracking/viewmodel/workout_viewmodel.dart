@@ -27,10 +27,12 @@ class WorkoutViewModel extends ChangeNotifier {
       required List<Map<String, dynamic>> setsData,
       required Duration duration,
       required DateTime sessionStartTime,
+      String? notes,
+      double? bodyWeight,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      _errorMessage = "Pengguna tidak terautentikasi.";
+      _errorMessage = "User not authenticated";
       _setState(ViewState.Error);
       return false;
     }

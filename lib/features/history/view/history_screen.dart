@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/history_viewmodel.dart';
 import '../../../data/models/workout_session_model.dart'; 
+import 'workout_session_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -25,11 +26,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat Latihan'),
+        title: const Text('Workout History'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Muat Ulang',
+            tooltip: 'Refresh',
             onPressed: () => context.read<HistoryViewModel>().fetchHistory(),
           ),
         ],
@@ -40,10 +41,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (viewModel.state == HistoryState.Error) {
-            return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text('Gagal memuat riwayat: ${viewModel.errorMessage}'),),);
+            return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text('Failed loading history: ${viewModel.errorMessage}'),),);
           }
           if (viewModel.sessions.isEmpty) {
-             return const Center(child: Text('Belum ada riwayat latihan.', style: TextStyle(fontSize: 18, color: Colors.grey),),);
+             return const Center(child: Text('There are no workout history yet', style: TextStyle(fontSize: 18, color: Colors.grey),),);
           }
 
 
@@ -51,8 +52,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             itemCount: viewModel.sessions.length,
             itemBuilder: (context, index) {
               final WorkoutSessionModel session = viewModel.sessions[index];
-              final formattedDate = DateFormat('EEEE, d MMM yyyy', 'id_ID').format(session.startTime);
-              final formattedTime = DateFormat('HH:mm', 'id_ID').format(session.startTime);
+              final formattedDate = DateFormat('EEEE, d MMM yyyy', 'id_US').format(session.startTime);
+              final formattedTime = DateFormat('HH:mm', 'id_US').format(session.startTime);
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -69,11 +70,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: Column(
                        crossAxisAlignment: CrossAxisAlignment.start,
                        children: [
-                         Text('Mulai: $formattedTime'),
-                         Text('Durasi: ${session.formattedDuration}'),
+                         Text('Start: $formattedTime'),
+                         Text('Duration: ${session.formattedDuration}'),
                          const SizedBox(height: 6),
                          Text(
-                           'Latihan: ${session.exercisesSummary}',
+                           'Workout: ${session.exercisesSummary}',
                            maxLines: 1,
                            overflow: TextOverflow.ellipsis,
                            style: TextStyle(color: Colors.grey.shade600),
@@ -83,16 +84,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey), 
                   onTap: () {
-                    print('Tap on session ID: ${session.id}');
-                     ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('Halaman detail sesi belum dibuat.')),
-                     );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WorkoutSessionDetailScreen(session: session),
+                      ),
+                    );
                   },
                 ),
               );
             },
           );
-          // --- AKHIR IMPLEMENTASI ---
         },
       ),
     );
