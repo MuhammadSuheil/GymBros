@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:gymbros/core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:provider/provider.dart';
@@ -59,20 +60,7 @@ class MyAppEntryPoint extends StatelessWidget {
     return MaterialApp(
        debugShowCheckedModeBanner: false,
        title: 'GymBros',
-       theme: ThemeData( 
-         primarySwatch: Colors.blue,
-         visualDensity: VisualDensity.adaptivePlatformDensity,
-         inputDecorationTheme: const InputDecorationTheme(
-             border: OutlineInputBorder(),
-             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-             style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-             )
-          )
-       ),
+       theme: AppTheme.darkTheme,
        home: const AuthWrapper(),
     );
   }

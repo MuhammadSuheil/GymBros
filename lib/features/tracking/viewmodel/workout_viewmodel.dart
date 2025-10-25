@@ -37,9 +37,13 @@ class WorkoutViewModel extends ChangeNotifier {
       return false;
     }
     final String userId = user.uid;
-
+    
+    print("[WorkoutViewModel] Received parameters:");
+    print("  Notes: '$notes'");
+    print("  BodyWeight: $bodyWeight");
+    
     _setState(ViewState.Loading);
-    bool success = false; // Flag hasil
+    bool success = false; 
     try {
       await _workoutRepository.addWorkoutSession(
         userId: userId,
@@ -51,7 +55,7 @@ class WorkoutViewModel extends ChangeNotifier {
       success = true;
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', ''); 
-      print("[WorkoutViewModel] Save session failed: $_errorMessage"); // Debug
+      print("[WorkoutViewModel] Save session failed: $_errorMessage"); 
       _setState(ViewState.Error);
       success = false;
     } finally {

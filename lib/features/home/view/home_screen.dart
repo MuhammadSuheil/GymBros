@@ -6,6 +6,7 @@ import '../../tracking/view/workout_tracking_screen.dart';
 import '../../history/viewmodel/history_viewmodel.dart';
 import '../../../data/models/workout_session_model.dart';
 import '../../history/view/workout_session_detail_screen.dart';
+import '../../../core/constants/app_colors.dart';
 
 class HomeScreen extends StatefulWidget { 
   const HomeScreen({super.key});
@@ -37,38 +38,44 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20.0), 
         children: [
+          SizedBox(height: 64),
           Text(
             'Welcome!',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.onPrimary, fontSize: 50),
           ),
           Text(
             userEmail, 
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey.shade700),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.onSecondary),
           ),
           const SizedBox(height: 24),
           Text(
             'Feeling good today?', 
-            style: Theme.of(context).textTheme.titleLarge,
+            style: TextStyle(
+              color: AppColors.onPrimary,
+              fontSize: 16,
+            )
           ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.fitness_center),
-            label: const Text('Start a New Workout'),
+          const SizedBox(height: 32),
+          ElevatedButton(
+           child: 
+            Text('Start a new Workout!'),
             style: ElevatedButton.styleFrom(
+              iconColor: AppColors.onPrimary,
               minimumSize: const Size.fromHeight(50), 
-              textStyle: const TextStyle(fontSize: 18),
+              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const WorkoutTrackingScreen()),
               );
+            
             },
           ),
           const SizedBox(height: 32),
           Text(
             'Recent Workouts', 
-             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppColors.onPrimary, fontSize: 24),
           ),
           const SizedBox(height: 12),
           _buildRecentHistory(historyViewModel),
@@ -96,15 +103,15 @@ class _HomeScreenState extends State<HomeScreen> {
        children: recentSessions.map((session) {
           final formattedDate = DateFormat('EEE, d MMM yyyy', 'en_US').format(session.startTime); 
           return Card(
-             margin: const EdgeInsets.symmetric(vertical: 6),
+             margin: const EdgeInsets.symmetric(vertical: 12),
              child: ListTile(
-               title: Text(formattedDate, style: const TextStyle(fontWeight: FontWeight.w500)),
+               title: Text(formattedDate, style: const TextStyle(fontWeight: FontWeight.w700)),
                subtitle: Text(
                  'Duration: ${session.formattedDuration} | Exercises: ${session.exercisesSummary}',
                  maxLines: 1,
                  overflow: TextOverflow.ellipsis,
                ),
-               trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+               trailing: const Icon(Icons.chevron_right, size: 28, color: Colors.grey),
                onTap: () {
                   Navigator.push(
                      context,

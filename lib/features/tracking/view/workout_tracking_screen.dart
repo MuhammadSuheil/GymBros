@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; 
+import 'package:flutter/services.dart';
+import 'package:gymbros/core/constants/app_colors.dart'; 
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import '../../../data/models/exercise_model.dart';
@@ -279,11 +280,15 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add exercise'),
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50)
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32), 
+                  ),
                 ),
               ),
             ),
             if (_workoutGroups.isNotEmpty)
+              SizedBox(height: 12,),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                 child: ElevatedButton(
@@ -348,9 +353,7 @@ class WorkoutGroupTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Theme.of(context).primaryColor,
+                            color: AppColors.textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -386,14 +389,15 @@ class WorkoutGroupTile extends StatelessWidget {
                         ),
                       ),
                     ],
-                    icon: const Icon(Icons.more_vert, size: 20),
+                    icon: const Icon(Icons.more_vert, size: 20, color: AppColors.onPrimary,),
+                    
                     tooltip: 'Exercise option',
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   )
               ],
             ),
-            const Divider(height: 16),
+            const Divider(height: 28, color: AppColors.divider,),
 
             ListView.separated(
               shrinkWrap: true,
@@ -417,11 +421,12 @@ class WorkoutGroupTile extends StatelessWidget {
               width: double.infinity,
               child: TextButton.icon(
                 onPressed: onAddSet,
-                icon: const Icon(Icons.add, size: 18),
+                icon: const Icon(Icons.add, size: 18, color: AppColors.onError,),
                 label: const Text('Add Set'),
                 style: TextButton.styleFrom(
                    padding: const EdgeInsets.symmetric(vertical: 8),
-                   foregroundColor: Theme.of(context).primaryColor,
+                   foregroundColor: AppColors.onPrimary,
+                   backgroundColor: AppColors.secondary,
                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                    alignment: Alignment.center,
                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)
@@ -469,17 +474,16 @@ class SetRow extends StatelessWidget {
         children: [
           Container(
             width: 30, height: 30, alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade400)
-            ),
-            child: Text(setNumber.toString(), style: TextStyle(color: Colors.grey.shade600)),
+            child: Text(setNumber.toString(), style: TextStyle(color: AppColors.textSecondary)),
           ),
           const SizedBox(width: 12),
           Expanded(
             flex: 3,
             child: TextFormField(
               controller: setEntry.weightController.text == '0.0' ? (TextEditingController()..text = '') : setEntry.weightController,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
               decoration: const InputDecoration(labelText: 'Weight (kg)', isDense: true),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: <TextInputFormatter>[ FilteringTextInputFormatter.allow(RegExp(r'^\d*[\.\,]?\d*')), ],
@@ -490,19 +494,41 @@ class SetRow extends StatelessWidget {
             flex: 2,
             child: TextFormField(
               controller: setEntry.repsController,
+              style: const TextStyle( 
+                color: Colors.white,
+              ),
               decoration: const InputDecoration(labelText: 'Reps', isDense: true),
               keyboardType: TextInputType.number,
               inputFormatters: <TextInputFormatter>[ FilteringTextInputFormatter.digitsOnly ],
             ),
           ),
           const SizedBox(width: 8),
-          Checkbox(
-            value: setEntry.isCompleted,
-            onChanged: (value) {
-              onToggleComplete(value ?? false);
-            },
-            visualDensity: VisualDensity.compact,
-          ),
+          Theme(
+            data: Theme.of(context).copyWith(
+              checkboxTheme: CheckboxThemeData(
+                shape: const CircleBorder(), 
+                side: const BorderSide(color: Colors.white, width: 2),
+                fillColor: WidgetStateProperty.resolveWith<Color?>(
+                  (states) {
+                    if (states.contains(WidgetState.selected)) return AppColors.success; 
+                    return Colors.transparent; 
+                  },
+                ),
+                checkColor: MaterialStateProperty.resolveWith<Color?>(
+                  (states) {
+                    if (states.contains(MaterialState.disabled)) return Colors.grey;
+                    if (states.contains(MaterialState.selected)) return Colors.white;
+                    return Colors.white; 
+                  },
+                ), 
+              ),
+            ),
+            child: Checkbox(
+              value: setEntry.isCompleted,
+              onChanged: (value) => onToggleComplete(value ?? false),
+              visualDensity: VisualDensity.compact,
+            ),
+          )
         ],
       ),
     );

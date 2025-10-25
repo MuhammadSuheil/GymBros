@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/workout_session_model.dart'; 
+import '../../../core/constants/app_colors.dart';
 
 class WorkoutSessionDetailScreen extends StatelessWidget {
   final WorkoutSessionModel session;
@@ -14,19 +15,21 @@ class WorkoutSessionDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detail Sesi - $formattedDate'), 
+        title: Text('Session Detail - $formattedDate'), 
       ),
       body: ListView( 
         padding: const EdgeInsets.all(16.0),
         children: [
+          SizedBox(height: 20),
           Card(
             elevation: 2,
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Session Summary', style: Theme.of(context).textTheme.titleLarge),
+                  Text('Session Summary',
+                  style: TextStyle(color: AppColors.onPrimary, fontSize: 28, fontWeight: FontWeight.w700),),
                   const SizedBox(height: 12),
                   _buildDetailRow('Date:', formattedDate),
                   _buildDetailRow('Start Time:', formattedTime),
@@ -35,6 +38,7 @@ class WorkoutSessionDetailScreen extends StatelessWidget {
                     _buildDetailRow('Body Weight:', '${session.bodyWeight} kg'),
                   if (session.notes != null && session.notes!.isNotEmpty) 
                     _buildDetailRow('Notes:', session.notes!),
+                    SizedBox(height: 12,)
                 ],
               ),
             ),
@@ -42,18 +46,18 @@ class WorkoutSessionDetailScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             'Sets Performed (${session.sets.length})',
-             style: Theme.of(context).textTheme.titleLarge,
+             style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.w700)
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
             child: Row(
                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                children: const [
-                 Expanded(flex: 4, child: Text('Exercise', style: TextStyle(fontWeight: FontWeight.bold))),
-                 Expanded(flex: 1, child: Text('Set', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
-                 Expanded(flex: 2, child: Text('Weight (kg)', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.bold))),
-                 Expanded(flex: 1, child: Text('Reps', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
+                 Expanded(flex: 4, child: Text('Exercise', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.onPrimary))),
+                 Expanded(flex: 1, child: Text('Set', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.onPrimary))),
+                 Expanded(flex: 2, child: Text('Weight (kg)', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.onPrimary))),
+                 Expanded(flex: 1, child: Text('Reps', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.onPrimary))),
                ],
             ),
           ),
@@ -70,14 +74,14 @@ class WorkoutSessionDetailScreen extends StatelessWidget {
                 final reps = set['reps'] ?? '-';
                 final isCompleted = set['isCompleted'] ?? false; 
                 return Padding(
-                   padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+                   padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(flex: 4, child: Text(exerciseName, style: TextStyle(decoration: isCompleted ? null : TextDecoration.lineThrough, color: isCompleted ? null : Colors.grey))),
-                        Expanded(flex: 1, child: Text(setNumber.toString(), textAlign: TextAlign.center, style: TextStyle(color: isCompleted ? null : Colors.grey))),
-                        Expanded(flex: 2, child: Text(weight.toString(), textAlign: TextAlign.right, style: TextStyle(color: isCompleted ? null : Colors.grey))),
-                        Expanded(flex: 1, child: Text(reps.toString(), textAlign: TextAlign.center, style: TextStyle(color: isCompleted ? null : Colors.grey))),
+                        Expanded(flex: 4, child: Text(exerciseName, style: TextStyle(decoration: isCompleted ? null : TextDecoration.lineThrough, color:AppColors.onPrimary))),
+                        Expanded(flex: 1, child: Text(setNumber.toString(), textAlign: TextAlign.center, style: TextStyle(color:AppColors.onPrimary))),
+                        Expanded(flex: 2, child: Text(weight.toString(), textAlign: TextAlign.right, style: TextStyle(color:AppColors.onPrimary))),
+                        Expanded(flex: 1, child: Text(reps.toString(), textAlign: TextAlign.center, style: TextStyle(color:AppColors.onPrimary))),
                       ],
                    ),
                 );
@@ -88,16 +92,16 @@ class WorkoutSessionDetailScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(width: 8),
-          Expanded(child: Text(value)),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.onPrimary)),
+          const SizedBox(width: 16),
+          Expanded(child: Text(value, style: TextStyle(color: AppColors.onPrimary),)),
         ],
       ),
     );

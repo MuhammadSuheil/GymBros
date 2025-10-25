@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; 
 import '../viewmodel/streak_viewmodel.dart';
+import '../../../core/constants/app_colors.dart';
+
 
 class StreakScreen extends StatefulWidget { 
   const StreakScreen({super.key});
@@ -36,21 +38,22 @@ class _StreakScreenState extends State<StreakScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                 const Icon(Icons.local_fire_department_rounded, size: 100, color: Colors.orangeAccent),
+                 Image.asset('assets/images/fire.png',
+                 height: 200,),
                  const SizedBox(height: 20),
                  Text(
                    '${viewModel.currentStreak}',
-                   style: const TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
+                   style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w900, color: AppColors.onPrimary),
                  ),
                  Text(
                    viewModel.currentStreak == 1 ? 'Day Streak!' : 'Day Streak!',
-                   style: const TextStyle(fontSize: 24, color: Colors.grey),
+                   style: const TextStyle(fontSize: 24, color: AppColors.onSecondary, fontWeight: FontWeight.w900),
                  ),
                  const SizedBox(height: 30),
                  if (viewModel.lastWorkoutDate != null)
                    Text(
                      'Last workout: ${DateFormat('EEEE, d MMM yyyy', 'en_US').format(viewModel.lastWorkoutDate!)}',
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      style: const TextStyle(fontSize: 16, color: AppColors.onSecondary),
                    )
                  else
                     const Text(
