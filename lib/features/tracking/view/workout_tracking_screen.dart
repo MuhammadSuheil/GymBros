@@ -129,7 +129,6 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
            );
            return;
         }
-
        setState(() {
           List<SetEntry> oldSets = List.from(groupToReplace.sets);
           final newGroup = WorkoutGroup(exercise: newSelectedExercise);
@@ -142,8 +141,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        });
      }
   }
-  void _finishWorkout() { // Ganti nama fungsi agar lebih jelas
-     // Validasi checklist dan data input
+  void _finishWorkout() { 
      bool allSetsCompleted = true;
      bool allValid = true;
      List<Map<String, dynamic>> sessionData = [];
@@ -155,7 +153,6 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
              allSetsCompleted = false;
              break;
           }
-          // Validasi input
           final reps = int.tryParse(setEntry.repsController.text);
           final weightText = setEntry.weightController.text.trim().replaceAll(',', '.');
           final weight = double.tryParse(weightText);
@@ -167,7 +164,7 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
                );
                break;
           }
-           sessionData.add({ /* ... (data set sama) ... */
+           sessionData.add({
              'exerciseId': group.exercise.id,
              'exerciseName': group.exercise.name,
              'setNumber': i + 1,
@@ -178,8 +175,6 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        }
        if (!allSetsCompleted || !allValid) break;
      }
-
-     // Cek hasil validasi
      if (!allSetsCompleted) {
        ScaffoldMessenger.of(context).showSnackBar(
          const SnackBar(content: Text('Please press all the check button before submitting')),
@@ -187,14 +182,11 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        return;
      }
       if (!allValid || sessionData.isEmpty) {
-        if (sessionData.isEmpty && allValid && allSetsCompleted) { // Kasus jika belum ada set sama sekali
+        if (sessionData.isEmpty && allValid && allSetsCompleted) { 
            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add some exercise')));
         }
-       return; // Error sudah ditampilkan sebelumnya jika !allValid
+       return; 
      }
-
-
-    // Jika semua valid, navigasi ke Summary Screen
     print("[TrackingScreen] Finishing workout, navigating to Summary...");
     Navigator.push(
       context,
@@ -223,13 +215,9 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<WorkoutViewModel>();
-
-     
      if (!_isInitialized) {
        return const Scaffold(body: Center(child: CircularProgressIndicator()));
      }
-     
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Start Workout'),
@@ -284,7 +272,6 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
                       },
                     ),
             ),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: OutlinedButton.icon(
@@ -296,7 +283,6 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
                 ),
               ),
             ),
-
             if (_workoutGroups.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
@@ -314,7 +300,6 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
     );
   }
 }
-
 
 class WorkoutGroupTile extends StatelessWidget {
   final WorkoutGroup group;
@@ -334,7 +319,7 @@ class WorkoutGroupTile extends StatelessWidget {
     required this.onToggleSetComplete,
   });
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
