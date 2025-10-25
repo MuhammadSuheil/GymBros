@@ -52,8 +52,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             itemCount: viewModel.sessions.length,
             itemBuilder: (context, index) {
               final WorkoutSessionModel session = viewModel.sessions[index];
-              final formattedDate = DateFormat('EEEE, d MMM yyyy', 'id_US').format(session.startTime);
-              final formattedTime = DateFormat('HH:mm', 'id_US').format(session.startTime);
+              final formattedDate = DateFormat('EEEE, d MMM yyyy', 'en_US').format(session.startTime);
+              final formattedTime = DateFormat('HH:mm', 'en_US').format(session.startTime);
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -10,6 +10,7 @@ import 'features/tracking/viewmodel/workout_viewmodel.dart';
 import 'features/exercise_selection/viewmodel/exercise_viewmodel.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
 import 'features/history/viewmodel/history_viewmodel.dart';
+import 'features/streak/viewmodel/streak_viewmodel.dart';
 
 import 'features/main_screen/main_screen.dart'; 
 import 'features/auth/view/login_screen.dart';
@@ -42,6 +43,9 @@ void main() async {
           create: (context) => ExerciseViewModel()..fetchInitialExercises(),
         ),
         ChangeNotifierProvider(create: (context) => HistoryViewModel()),
+        ChangeNotifierProvider(
+          create: (context) => StreakViewModel()..fetchStreakData(), 
+        ),
       ],
       child: const MyAppEntryPoint(),
     ),

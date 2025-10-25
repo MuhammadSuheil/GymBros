@@ -4,6 +4,7 @@ import '../models/workout_session_model.dart';
 
 class WorkoutRepository {
   final CollectionReference _sessionsCollection = FirebaseFirestore.instance.collection('workout_sessions');
+  final CollectionReference _profilesCollection = FirebaseFirestore.instance.collection('user_profiles');
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   Future<void> addWorkoutSession({
@@ -11,19 +12,96 @@ class WorkoutRepository {
     required List<Map<String, dynamic>> setsData,
     required Duration duration,
     required DateTime sessionStartTime,
+    String? notes,
+    double? bodyWeight,
   }) async {
-    if (setsData.isEmpty) { throw Exception('There is not set to be saved'); }
-    try {
-      await _sessionsCollection.add({
-        'userId': userId,
-        'startTime': Timestamp.fromDate(sessionStartTime),
-        'endTime': Timestamp.now(),
-        'durationSeconds': duration.inSeconds,
-        'sets': setsData,
-      });
-    } catch (e) { print('Error adding workout session: $e'); throw Exception('Error saving workout session');}
-  }
+    if (setsData.isEmpty) { throw Exception('No set data to save.'); }
 
+    final profileDocRef = _profilesCollection.doc(userId);
+    final DateTime sessionEndTime = DateTime.now();
+    final newSessionDocRef = _sessionsCollection.doc();
+
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+       DocumentSnapshot profileSnapshot = await transaction.get(profileDocRef);
+       int currentStreak = 0;
+       int longestStreak = 0; 
+       DateTime? lastWorkoutDate;
+       Map<String, dynamic> currentProfileData = {}; 
+
+       if (profileSnapshot.exists) {
+         currentProfileData = profileSnapshot.data() as Map<String, dynamic>;
+         currentStreak = currentProfileData['currentStreak'] ?? 0;
+         longestStreak = currentProfileData['longestStreak'] ?? 0; 
+         lastWorkoutDate = (currentProfileData['lastWorkoutDate'] as Timestamp?)?.toDate();
+       }
+
+       int newStreak = 0;
+       DateTime todayStart = DateTime(sessionStartTime.year, sessionStartTime.month, sessionStartTime.day);
+       DateTime? lastWorkoutDayStart;
+       if (lastWorkoutDate != null) {
+          lastWorkoutDayStart = DateTime(lastWorkoutDate.year, lastWorkoutDate.month, lastWorkoutDate.day);
+       }
+
+       if (lastWorkoutDayStart != null) {
+         int differenceInDays = todayStart.difference(lastWorkoutDayStart).inDays;
+         print("[Streak Logic] Today: $todayStart, Last Workout: $lastWorkoutDayStart, Difference: $differenceInDays days");
+         if (differenceInDays == 0) {
+           newStreak = currentStreak;
+           print("[Streak Logic] Same day. Streak remains: $newStreak");
+         } else if (differenceInDays >= 1 && differenceInDays <= 4) {
+           newStreak = currentStreak + 1;
+           print("[Streak Logic] Consecutive/Tolerance. Streak increased: $newStreak");
+         } else { 
+           newStreak = 1;
+            print("[Streak Logic] Streak broken (>4 days). Resetting to: $newStreak");
+         }
+       } else {
+         newStreak = 1; 
+          print("[Streak Logic] First workout. Starting streak: $newStreak");
+       }
+       transaction.set(newSessionDocRef, { 
+         'userId': userId,
+         'startTime': Timestamp.fromDate(sessionStartTime),
+         'endTime': Timestamp.fromDate(sessionEndTime),
+         'durationSeconds': duration.inSeconds,
+         'sets': setsData,
+         'notes': notes,
+         'bodyWeight': bodyWeight,
+       });
+       print("[Transaction] Set session data completed."); 
+   
+       bool shouldUpdateProfile = !profileSnapshot.exists || (lastWorkoutDayStart != null && todayStart.isAfter(lastWorkoutDayStart)) || lastWorkoutDayStart == null;
+
+       if (shouldUpdateProfile) {
+          int newLongestStreak = (newStreak > longestStreak) ? newStreak : longestStreak; 
+          Map<String, dynamic> profileUpdateData = {
+             'userId': userId,
+             'lastWorkoutDate': Timestamp.fromDate(sessionStartTime),
+             'currentStreak': newStreak,
+             'longestStreak': newLongestStreak, 
+             'email': _firebaseAuth.currentUser?.email
+          };
+          if (!profileSnapshot.exists) {
+             print("[Transaction] Profile does not exist. Creating with data: $profileUpdateData");
+             transaction.set(profileDocRef, profileUpdateData); 
+          } else {
+             print("[Transaction] Profile exists. Updating with data: $profileUpdateData");
+             transaction.update(profileDocRef, profileUpdateData); 
+          }
+          print("[Transaction] Profile update scheduled."); 
+       } else {
+          print("[Transaction] Profile update skipped (same day workout)."); 
+       }
+    }).catchError((error, stackTrace) { 
+       print("===================================");
+       print("!!! Firestore Transaction Failed !!!");
+       print("Error Type: ${error.runtimeType}");
+       print("Error: $error");
+       print("Stack Trace:\n$stackTrace");
+       print("===================================");
+       throw Exception('Transaction Failed: $error'); 
+    });
+  }
   Future<List<WorkoutSessionModel>> getWorkoutSessions() async {
     final user = _firebaseAuth.currentUser;
     if (user == null) {
@@ -47,5 +125,45 @@ class WorkoutRepository {
       throw Exception('Error fetching Workout History');
     }
   }
+
+  Future<Map<String, dynamic>> getUserStreakData() async {
+     final user = _firebaseAuth.currentUser;
+     if (user == null) return {'currentStreak': 0, 'lastWorkoutDate': null}; 
+
+     try {
+       final profileDoc = await _profilesCollection.doc(user.uid).get();
+       if (profileDoc.exists) {
+          final data = profileDoc.data() as Map<String, dynamic>;
+          DateTime? lastWorkoutDate = (data['lastWorkoutDate'] as Timestamp?)?.toDate();
+          int currentStreak = data['currentStreak'] ?? 0;
+          if (lastWorkoutDate != null) {
+             DateTime todayStart = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+             DateTime lastWorkoutDayStart = DateTime(lastWorkoutDate.year, lastWorkoutDate.month, lastWorkoutDate.day);
+             int differenceInDays = todayStart.difference(lastWorkoutDayStart).inDays;
+             if (differenceInDays > 4) { 
+                print("[Streak Logic] Streak expired on fetch. Resetting.");
+          
+                currentStreak = 0; 
+             }
+          }
+          return {'currentStreak': currentStreak, 'lastWorkoutDate': lastWorkoutDate};
+       } else {
+          return {'currentStreak': 0, 'lastWorkoutDate': null}; 
+       }
+     } catch (e) {
+        print("[Streak Logic] Error fetching streak data: $e");
+        return {'currentStreak': 0, 'lastWorkoutDate': null}; 
+     }
+  }
+}
+extension Unique<E, Id> on List<E> {
+  List<E> distinctBy(Id Function(E element) id) {
+    final seen = <Id>{};
+    return where((element) => seen.add(id(element))).toList();
+  }
+}
+extension Sort<E> on List<E> {
+  List<E> sortedBy<T extends Comparable>(T Function(E e) key) =>
+      toList()..sort((a, b) => key(a).compareTo(key(b)));
 }
 
