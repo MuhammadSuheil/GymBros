@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gymbros/core/theme/app_theme.dart';
 import 'package:intl/intl.dart'; 
 import 'package:provider/provider.dart';
 import '../viewmodel/history_viewmodel.dart';
 import '../../../data/models/workout_session_model.dart'; 
 import 'workout_session_detail_screen.dart';
+import '../../../core/constants/app_colors.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -56,11 +58,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
               final formattedTime = DateFormat('HH:mm', 'en_US').format(session.startTime);
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                elevation: 3, 
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), 
                 child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(20),
                   title: Text(
                     formattedDate, 
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -77,7 +78,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                            'Workout: ${session.exercisesSummary}',
                            maxLines: 1,
                            overflow: TextOverflow.ellipsis,
-                           style: TextStyle(color: Colors.grey.shade600),
+                           style: TextStyle(color: AppColors.onSecondary),
                          ),
                        ],
                     ),

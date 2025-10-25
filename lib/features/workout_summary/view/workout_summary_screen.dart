@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart'; // Untuk format tanggal/waktu
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../tracking/viewmodel/workout_viewmodel.dart'; // Import viewmodel
+import '../../tracking/viewmodel/workout_viewmodel.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
-  // Data yang diterima dari WorkoutTrackingScreen
   final List<Map<String, dynamic>> setsData;
   final Duration duration;
   final DateTime sessionStartTime;
@@ -33,41 +32,34 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     super.dispose();
   }
 
-  // Fungsi untuk menyimpan sesi final
   void _saveFinalSession(BuildContext context) async {
-     // Validasi input berat badan (opsional)
-     if (!_formKey.currentState!.validate()) {
-       return;
-     }
+     if (!_formKey.currentState!.validate()) { return; }
 
     final viewModel = Provider.of<WorkoutViewModel>(context, listen: false);
-    viewModel.resetErrorState(); // Reset error state
+    viewModel.resetErrorState();
 
-    // Ambil data tambahan
     final String notes = _notesController.text.trim();
     final double? bodyWeight = double.tryParse(
-        _bodyWeightController.text.trim().replaceAll(',', '.') // Handle koma desimal
+        _bodyWeightController.text.trim().replaceAll(',', '.')
     );
-
+    print("[SummaryScreen] Values read from controllers:");
+    print("  Notes: '$notes'"); 
+    print("  BodyWeight (parsed): $bodyWeight");
     print("[SummaryScreen] Saving session with notes: $notes, bodyWeight: $bodyWeight");
 
-    // Panggil fungsi saveWorkoutSession di ViewModel (perlu diupdate nanti)
-    // Kita tambahkan parameter baru: notes dan bodyWeight
+    
     bool success = await viewModel.saveWorkoutSession(
       setsData: widget.setsData,
       duration: widget.duration,
       sessionStartTime: widget.sessionStartTime,
-      // --- Parameter Baru ---
-      notes: notes,
+      notes: notes.isNotEmpty ? notes : null,
       bodyWeight: bodyWeight,
-      // --------------------
     );
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Workout session has been saved!'), duration: Duration(seconds: 2)),
+        const SnackBar(content: Text('Workout session saved successfully!'), duration: Duration(seconds: 2)),
       );
-      // Kembali 2x: Tutup SummaryScreen DAN WorkoutTrackingScreen
       int count = 0;
       Navigator.of(context).popUntil((_) => count++ >= 2);
     } else if (!success && mounted) {
@@ -77,8 +69,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     }
   }
 
-  // Helper untuk format durasi
-   String _formatDuration(Duration duration) {
+  String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final hours = twoDigits(duration.inHours);
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -86,24 +77,19 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     return "$hours:$minutes:$seconds";
   }
 
-  // Helper untuk ringkasan exercises
    String _getExercisesSummary() {
-      if (widget.setsData.isEmpty) return 'There is no exercise';
-      final exerciseNames = widget.setsData
-                                 .map((set) => set['exerciseName'] as String? ?? 'N/A')
-                                 .toSet()
-                                 .take(5) // Ambil lebih banyak
-                                 .join(', ');
+      if (widget.setsData.isEmpty) return 'No exercises';
+      final exerciseNames = widget.setsData.map((set) => set['exerciseName'] as String? ?? 'N/A').toSet().take(5).join(', ');
       return exerciseNames;
    }
 
   @override
   Widget build(BuildContext context) {
-     final viewModel = context.watch<WorkoutViewModel>(); // Untuk state loading
+     final viewModel = context.watch<WorkoutViewModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workout summary'),
+        title: const Text('Workout Summary'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -112,7 +98,6 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- Bagian Rangkuman (Read-only) ---
               Card(
                 elevation: 2,
                 child: Padding(
@@ -121,48 +106,45 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ringkasan Sesi',
+                        'Session Summary',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 12),
-                      _buildSummaryRow('Date:', DateFormat('EEEE, d MMM yyyy', 'id_ID').format(widget.sessionStartTime)),
-                      _buildSummaryRow('Start time:', DateFormat('HH:mm', 'id_ID').format(widget.sessionStartTime)),
+                      _buildSummaryRow('Date:', DateFormat('EEEE, d MMM yyyy', 'en_US').format(widget.sessionStartTime)),
+                      _buildSummaryRow('Start Time:', DateFormat('HH:mm', 'en_US').format(widget.sessionStartTime)),
                       _buildSummaryRow('Duration:', _formatDuration(widget.duration)),
-                      _buildSummaryRow('Total set:', widget.setsData.length.toString()),
-                       _buildSummaryRow('Workout:', _getExercisesSummary()),
+                      _buildSummaryRow('Total Sets:', widget.setsData.length.toString()),
+                      _buildSummaryRow('Exercises:', _getExercisesSummary()),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // --- Bagian Input Tambahan ---
               Text(
-                'Info Tambahan (Opsional)',
+                'Additional Info (Optional)',
                  style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
 
-              // Input Catatan
               TextFormField(
                 controller: _notesController,
                 decoration: const InputDecoration(
                   labelText: 'Workout Notes',
-                  hintText: 'how are you feeling? any new PRs?',
+                  hintText: 'How did it feel? Any PRs?',
                   border: OutlineInputBorder(),
-                  alignLabelWithHint: true, // Agar label di atas saat multi-line
+                  alignLabelWithHint: true,
                 ),
-                maxLines: 3, // Beberapa baris
+                maxLines: 3,
                 textInputAction: TextInputAction.done,
               ),
               const SizedBox(height: 16),
 
-              // Input Berat Badan
               TextFormField(
                 controller: _bodyWeightController,
                 decoration: const InputDecoration(
-                  labelText: 'Body Weight',
-                  hintText: 'ex: 70',
+                  labelText: 'Current Body Weight (kg)',
+                  hintText: 'Example: 75.5',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.monitor_weight_outlined),
                 ),
@@ -171,26 +153,25 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                   FilteringTextInputFormatter.allow(RegExp(r'^\d*[\.\,]?\d*')),
                 ],
                  validator: (value) {
-                    if (value == null || value.isEmpty) return null; // Boleh kosong
+                    if (value == null || value.isEmpty) return null;
                     final weight = double.tryParse(value.replaceAll(',', '.'));
                     if (weight == null) {
-                       return 'Enter a valid number!';
+                       return 'Enter a valid number!'; 
                     }
                     if (weight <= 0) {
-                       return 'Invalid Bodyweight';
+                       return 'Invalid Bodyweight'; 
                     }
                     return null;
                  },
-              ),
+              ), 
               const SizedBox(height: 32),
 
-              // Tombol Simpan Final
               ElevatedButton(
                 onPressed: viewModel.state == ViewState.Loading ? null : () => _saveFinalSession(context),
                 style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
                 child: viewModel.state == ViewState.Loading
                   ? const CircularProgressIndicator(color: Colors.white,)
-                  : const Text('Save Workout Session'),
+                  : const Text('Save Workout Session'), 
               ),
             ],
           ),
@@ -199,7 +180,6 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     );
   }
 
-  // Widget helper untuk baris rangkuman
   Widget _buildSummaryRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -214,3 +194,4 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     );
   }
 }
+
