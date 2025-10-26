@@ -1,7 +1,6 @@
-import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
-// Custom Clipper untuk membuat bentuk hexagon (Kembali ke versi awal yang mengisi)
 class HexagonClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -9,7 +8,6 @@ class HexagonClipper extends CustomClipper<Path> {
     final double width = size.width;
     final double height = size.height;
 
-    // Koordinat Y kembali normal (mengisi area 0.05 sampai 0.95)
     path.moveTo(width * 0.25, height * 0.05);
     path.lineTo(width * 0.75, height * 0.05);
     path.lineTo(width, height * 0.5);
@@ -25,7 +23,6 @@ class HexagonClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
-// HexagonBorder tetap sama (tidak perlu diubah lagi)
 class HexagonBorder extends ShapeBorder {
   final BorderSide side;
   const HexagonBorder({this.side = BorderSide.none});

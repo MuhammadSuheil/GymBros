@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'login_screen.dart';
 import '../viewmodel/auth_viewmodel.dart';
+import '../../../core/widgets/dialogs.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -95,9 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       builder: (context, viewModel, child) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (viewModel.state == AuthState.Error && viewModel.errorMessage.isNotEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar( content: Text(viewModel.errorMessage), backgroundColor: Colors.redAccent,),
-            );
+            showErrorPopup(context, 'Registration Failed', viewModel.errorMessage);
             viewModel.resetErrorState();
           }
         });

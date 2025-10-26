@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/workout_session_model.dart'; // Import model sesi
-import 'package:collection/collection.dart'; // Import collection
+import '../models/workout_session_model.dart'; 
+import 'package:collection/collection.dart'; 
 
 class WorkoutRepository {
   final CollectionReference _sessionsCollection =
@@ -10,7 +10,6 @@ class WorkoutRepository {
       FirebaseFirestore.instance.collection('user_profiles');
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
-  // --- HAPUS 'so' DARI SINI ---
   Future<void> addWorkoutSession({
     required String userId,
     required List<Map<String, dynamic>> setsData,
@@ -18,8 +17,8 @@ class WorkoutRepository {
     required DateTime sessionStartTime,
     String? notes,
     double? bodyWeight,
-  }) async { // <--- 'so' sudah dihapus
-  // --- AKHIR PERBAIKAN ---
+  }) async { 
+  
     if (setsData.isEmpty) { throw Exception('No set data to save.'); }
 
     final profileDocRef = _profilesCollection.doc(userId);
@@ -51,7 +50,7 @@ class WorkoutRepository {
 
        if (lastWorkoutDayStart != null) {
          int differenceInDays = todayStart.difference(lastWorkoutDayStart).inDays;
-         print("[Streak Logic] Today: $todayStart, Last Workout: $lastWorkoutDayStart, Difference: $differenceInDays days"); // Debug
+         print("[Streak Logic] Today: $todayStart, Last Workout: $lastWorkoutDayStart, Difference: $differenceInDays days"); 
          if (differenceInDays == 0) { newStreak = currentStreak; print("[Streak Logic] Same day. Streak remains: $newStreak"); }
          else if (differenceInDays >= 1 && differenceInDays <= 4) { newStreak = currentStreak + 1; print("[Streak Logic] Consecutive/Tolerance. Streak increased: $newStreak"); }
          else { newStreak = 1; print("[Streak Logic] Streak broken (>4 days). Resetting to: $newStreak"); }
@@ -66,8 +65,7 @@ class WorkoutRepository {
          'notes': notes,
          'bodyWeight': bodyWeight,
        });
-       print("[Transaction] Set session data completed with notes: '$notes', bodyWeight: $bodyWeight."); // Debug
-
+       print("[Transaction] Set session data completed with notes: '$notes', bodyWeight: $bodyWeight."); 
 
        bool shouldUpdateProfile = !profileSnapshot.exists || (lastWorkoutDayStart != null && todayStart.isAfter(lastWorkoutDayStart)) || lastWorkoutDayStart == null;
        if (shouldUpdateProfile) {
@@ -86,8 +84,8 @@ class WorkoutRepository {
              print("[Transaction] Profile exists. Updating with data: $profileUpdateData");
              transaction.update(profileDocRef, profileUpdateData);
           }
-          print("[Transaction] Profile update scheduled."); // Debug
-       } else { print("[Transaction] Profile update skipped (same day workout)."); } // Debug
+          print("[Transaction] Profile update scheduled."); 
+       } else { print("[Transaction] Profile update skipped (same day workout)."); } 
 
     }).catchError((error, stackTrace) {
        print("===================================");
@@ -100,8 +98,7 @@ class WorkoutRepository {
     });
   }
 
-
-  Future<List<WorkoutSessionModel>> getWorkoutSessions() async { /* ... (sama) ... */
+  Future<List<WorkoutSessionModel>> getWorkoutSessions() async {
      final user = _firebaseAuth.currentUser;
      if (user == null) { print("[WorkoutRepository] User not logged in..."); return []; }
      final String userId = user.uid;
@@ -118,7 +115,7 @@ class WorkoutRepository {
      } catch (e) { print('[WorkoutRepository] Error fetching sessions: $e'); throw Exception('Error fetching Workout History'); }
    }
 
-  Future<Map<String, dynamic>> getUserStreakData() async { /* ... (sama) ... */
+  Future<Map<String, dynamic>> getUserStreakData() async {
      final user = _firebaseAuth.currentUser;
      if (user == null) return {'currentStreak': 0, 'lastWorkoutDate': null};
      try {

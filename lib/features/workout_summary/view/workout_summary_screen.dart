@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../tracking/viewmodel/workout_viewmodel.dart';
+import '../../../core/widgets/dialogs.dart';
+import 'package:gymbros/core/constants/app_colors.dart'; 
+import '../../main_screen/main_screen.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
   final List<Map<String, dynamic>> setsData;
@@ -47,7 +50,6 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     print("  BodyWeight (parsed): $bodyWeight");
     print("[SummaryScreen] Saving session with notes: $notes, bodyWeight: $bodyWeight");
 
-    
     bool success = await viewModel.saveWorkoutSession(
       setsData: widget.setsData,
       duration: widget.duration,
@@ -57,15 +59,22 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     );
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Workout session saved successfully!'), duration: Duration(seconds: 2)),
+      showInfoPopup(
+        context,
+        'Success!',
+        'Your workout session has been saved successfully.',
+        onOkPressed: () {
+          // Navigasi KEMBALI KE ROOT (MainScreen)
+          // Ini akan menutup SummaryScreen DAN TrackingScreen
+          Navigator.of(context).pushAndRemoveUntil(
+             MaterialPageRoute(builder: (context) => const MainScreen()), 
+             (Route<dynamic> route) => false // Hapus semua rute sebelumnya
+          );
+        }
       );
-      int count = 0;
-      Navigator.of(context).popUntil((_) => count++ >= 2);
     } else if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saving Failed: ${viewModel.errorMessage}')),
-      );
+      // Ganti SnackBar dengan Popup
+      showErrorPopup(context, 'Save Failed', viewModel.errorMessage);
     }
   }
 
@@ -92,22 +101,27 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         title: const Text('Workout Summary'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 2,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Session Summary',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: TextStyle(
+                          color: AppColors.onPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 24,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       _buildSummaryRow('Date:', DateFormat('EEEE, d MMM yyyy', 'en_US').format(widget.sessionStartTime)),
@@ -123,11 +137,18 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
               Text(
                 'Additional Info (Optional)',
-                 style: Theme.of(context).textTheme.titleLarge,
+                 style: TextStyle(
+                          color: AppColors.onPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
               ),
               const SizedBox(height: 16),
 
               TextFormField(
+                style: TextStyle(
+                  color: Colors.white,
+                ),
                 controller: _notesController,
                 decoration: const InputDecoration(
                   labelText: 'Workout Notes',
@@ -141,6 +162,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
               const SizedBox(height: 16),
 
               TextFormField(
+                style: TextStyle(
+                  color: Colors.white,
+                ),
                 controller: _bodyWeightController,
                 decoration: const InputDecoration(
                   labelText: 'Current Body Weight (kg)',
@@ -186,9 +210,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.onSecondary,)),
           const SizedBox(width: 8),
-          Expanded(child: Text(value)),
+          Expanded(child: Text(value, style: TextStyle(color: AppColors.onPrimary),)),
         ],
       ),
     );

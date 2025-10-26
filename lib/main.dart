@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'core/services/notification_service.dart';
+
 import 'features/tracking/viewmodel/workout_viewmodel.dart';
 import 'features/exercise_selection/viewmodel/exercise_viewmodel.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
@@ -19,10 +21,13 @@ import 'features/auth/view/login_screen.dart';
 const supabaseUrl = 'https://tbyjchwkedxhgkdefrco.supabase.co';
 const supabaseKey = String.fromEnvironment('SUPABASE_KEY');
 
+final NotificationService notificationService = NotificationService();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   await initializeDateFormatting('en_US', null);
+  await notificationService.initNotifications();
 
   try {
      await sb.Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
@@ -34,6 +39,8 @@ void main() async {
   runApp(
     MultiProvider( 
       providers: [
+        Provider<NotificationService>.value(value: notificationService),
+
         ChangeNotifierProvider(create: (context) => AuthViewModel()),
         StreamProvider<fb.User?>.value( 
           value: fb.FirebaseAuth.instance.authStateChanges(),

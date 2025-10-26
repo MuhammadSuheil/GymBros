@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'register_screen.dart';
 import '../viewmodel/auth_viewmodel.dart';
 import '../../tracking/view/workout_tracking_screen.dart';
+import '../../../core/widgets/dialogs.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -53,9 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context, viewModel, child) {
          WidgetsBinding.instance.addPostFrameCallback((_) {
           if (viewModel.state == AuthState.Error && viewModel.errorMessage.isNotEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar( content: Text(viewModel.errorMessage), backgroundColor: Colors.redAccent,),
-            );
+            showErrorPopup(context, 'Login Failed', viewModel.errorMessage);
             viewModel.resetErrorState();
           }
         });

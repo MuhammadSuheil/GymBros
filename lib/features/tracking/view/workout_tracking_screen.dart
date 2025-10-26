@@ -11,6 +11,8 @@ import '../viewmodel/workout_viewmodel.dart';
 import '../../exercise_selection/view/exercise_selection_screen.dart';
 import '../../exercise_detail/view/exercise_detail_screen.dart';
 import '../../workout_summary/view/workout_summary_screen.dart';
+import '../../../core/widgets/dialogs.dart';
+import '../../../core/services/notification_service.dart';
 
 class WorkoutTrackingScreen extends StatefulWidget {
   const WorkoutTrackingScreen({super.key});
@@ -28,12 +30,25 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
   late DateTime _sessionStartTime;
   bool _isInitialized = false; 
 
+  Timer? _restTimer;
+  Duration _restDuration = const Duration(seconds: 90); 
+  Duration _currentRestTime = Duration.zero;
+  bool _isResting = false;
+  
+  final _minutesController = TextEditingController();
+  final _secondsController = TextEditingController();
+  
+  late NotificationService _notificationService;
+
   @override
   void initState() {
     super.initState();
     _sessionStartTime = DateTime.now();
+    _minutesController.text = _restDuration.inMinutes.toString();
+    _secondsController.text = _restDuration.inSeconds.remainder(60).toString();
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notificationService = context.read<NotificationService>(); 
        if (mounted) { 
           _startTimer();
           setState(() {
@@ -56,6 +71,162 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
       }
     });
   }
+
+  void _startRestTimer() {
+    _restTimer?.cancel();
+    _currentRestTime = _restDuration;
+    _isResting = true;
+    setState(() {});
+
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        if (_currentRestTime.inSeconds > 0) {
+           setState(() {
+              _currentRestTime = Duration(seconds: _currentRestTime.inSeconds - 1);
+           });
+        } else {
+          timer.cancel();
+          _isResting = false;
+          setState(() {});
+
+          print("[NotificationService] Attempting to show rest finished notification...");
+          _notificationService.showNotification(
+            'Rest Finished!',
+            'Time to start your next set!',
+          );
+
+          showInfoPopup(
+            context, 
+            "Rest Time's Up!", 
+            "Get on to your next set!",
+         );
+
+          HapticFeedback.vibrate(); 
+        }
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  void _stopRestTimer() {
+     _restTimer?.cancel();
+      _isResting = false;
+      _currentRestTime = Duration.zero;
+      if (mounted) setState(() {});
+  }
+
+  void _showEditRestTimerDialog() {
+     // Set controller ke durasi saat ini
+     _minutesController.text = _restDuration.inMinutes.toString();
+     _secondsController.text = _restDuration.inSeconds.remainder(60).toString();
+
+     showDialog(
+       context: context,
+       builder: (context) {
+         return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20) ),
+           title: Center(child: const Text('Set Rest Duration', style: TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.w700),)),
+           content: Column(
+             mainAxisSize: MainAxisSize.min,
+             children: [
+                SizedBox(height: 16,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 80,
+                      child: TextField(
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 40),
+                        controller: _minutesController,
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          labelText: 'Min',
+                          filled: true,                
+                          fillColor: AppColors.background,   
+                          border: OutlineInputBorder(    
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Colors.transparent, 
+                            ),
+                          ),
+                          ),  
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(':', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: AppColors.onPrimary)),
+                    ),
+                    SizedBox(
+                      width: 80,
+                      child: TextField(
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 40),
+                        controller: _secondsController,
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          labelText: 'Sec',
+                          filled: true,                
+                          fillColor: AppColors.background,   
+                          border: OutlineInputBorder(    
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Colors.transparent, 
+                            ),
+                          ),
+                          ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      ),
+                    ),
+                  ],
+                ),
+             ],
+           ),
+           actions: [
+             TextButton(
+               onPressed: () => Navigator.of(context).pop(),
+               child: const Text('Cancel'),
+             ),
+             TextButton(
+               style: TextButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary
+               ),
+
+               onPressed: () {
+                 final int minutes = int.tryParse(_minutesController.text) ?? 0;
+                 final int seconds = int.tryParse(_secondsController.text) ?? 0;
+                 if (mounted) {
+                    setState(() {
+                       _restDuration = Duration(minutes: minutes, seconds: seconds);
+                    });
+                 }
+                  Navigator.of(context).pop();
+               },
+               child: const Text('Set'),
+             ),
+           ],
+         );
+       },
+     );
+  }
+  
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final hours = twoDigits(duration.inHours);
@@ -72,9 +243,11 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
     if (selectedExercise != null && mounted) {
       bool groupExists = _workoutGroups.any((group) => group.exercise.id == selectedExercise.id);
       if (groupExists) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('${selectedExercise.name} is already added'))
-         );
+        showInfoPopup(
+        context, 
+        'Exercise Already Added', 
+        '${selectedExercise.name} is already in your list. Adding another set instead.'
+      );
          int lastIndex = _workoutGroups.lastIndexWhere((group) => group.exercise.id == selectedExercise.id);
          WorkoutGroup targetGroup = _workoutGroups.firstWhere((group) => group.exercise.id == selectedExercise.id);
          _addSetToGroup(targetGroup);
@@ -125,9 +298,11 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
      if (newSelectedExercise != null && mounted) {
        bool newExerciseExists = _workoutGroups.any((group) => group.exercise.id == newSelectedExercise.id && group != groupToReplace);
         if (newExerciseExists) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('${newSelectedExercise.name} is already added'))
-           );
+           showInfoPopup(
+            context,
+            'Exercise Exists', 
+            '${newSelectedExercise.name} is already in this workout session.' 
+            );
            return;
         }
        setState(() {
@@ -160,9 +335,11 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
 
           if (setEntry.repsController.text.trim().isEmpty || weightText.isEmpty || reps == null || weight == null) {
               allValid = false;
-              ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text('Invalid Reps/Weight data on: ${group.exercise.name} (Set ${i + 1})')),
-               );
+              showErrorPopup(
+                context,
+                'Invalid Input', 
+                'Please enter valid Reps and Weight for: ${group.exercise.name} (Set ${i + 1})' 
+              );
                break;
           }
            sessionData.add({
@@ -177,14 +354,20 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
        if (!allSetsCompleted || !allValid) break;
      }
      if (!allSetsCompleted) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('Please press all the check button before submitting')),
-       );
+       showErrorPopup(
+        context,
+        'Sets Not Completed', 
+        'Please check off all completed sets before saving the session.' 
+      );
        return;
      }
       if (!allValid || sessionData.isEmpty) {
         if (sessionData.isEmpty && allValid && allSetsCompleted) { 
-           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add some exercise')));
+           showInfoPopup(
+            context,
+            'Empty Workout', 
+            'Please add at least one exercise set before saving.' 
+          );
         }
        return; 
      }
@@ -204,12 +387,15 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _restTimer?.cancel();
     for (var group in _workoutGroups) {
       for (var set in group.sets) {
         set.repsController.dispose();
         set.weightController.dispose();
       }
     }
+    _minutesController.dispose(); 
+    _secondsController.dispose();
     super.dispose();
   }
 
@@ -219,87 +405,165 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
      if (!_isInitialized) {
        return const Scaffold(body: Center(child: CircularProgressIndicator()));
      }
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Start Workout'),
-        actions: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Text(
-                _formatDuration(_duration),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          )
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: _workoutGroups.isEmpty
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text(
-                          'Press the "Start Workout" button down below to start',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                         ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 80),
-                      itemCount: _workoutGroups.length,
-                      itemBuilder: (context, index) {
-                        final group = _workoutGroups[index];
-                        return WorkoutGroupTile(
-                          key: ValueKey(group.exercise.id),
-                          group: group,
-                          onAddSet: () => _addSetToGroup(group),
-                          onDeleteSet: (setToDelete) => _deleteSetFromGroup(group, setToDelete),
-                          onReplaceExercise: () => _replaceExercise(group),
-                          onDeleteWorkout: () => _deleteWorkoutGroup(group),
-                          onToggleSetComplete: (setEntry, isCompleted) {
-                             if (mounted) {
-                               setState(() {
-                                 setEntry.isCompleted = isCompleted;
-                               });
-                             }
-                          },
-                        );
-                      },
+
+    final String timerText = _isResting
+        ? _formatDuration(_currentRestTime) 
+        : _formatDuration(_duration); 
+
+    final Color timerColor = _isResting
+        ? AppColors.success 
+        : AppColors.textSecondary; 
+
+    return PopScope(
+      canPop: _workoutGroups.isEmpty, 
+      onPopInvoked: (bool didPop) {
+        if (didPop) return; 
+        
+        print("[PopScope] Pop blocked, showing discard dialog...");
+        showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                title: const Text('Discard Workout?', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.onPrimary),),
+                content: const Text('Are you sure you want to discard this workout session? All progress will be lost.', style: TextStyle(color: AppColors.onPrimary),),
+                actions: <Widget>[
+                  TextButton(
+                    style: TextButton.styleFrom(
+                foregroundColor: AppColors.onPrimary,        
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
                     ),
+                    shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                    ),
+                        child: const Text('No'),
+                  onPressed: () {
+                    Navigator.of(context).pop(false); 
+                  },
+                ),
+                TextButton(
+                  child: const Text('Yes, Discard'),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  onPressed: () {
+                    Navigator.of(context).pop(true); 
+                  },
+                ),
+              ],
+            );
+          },
+        ).then((bool? shouldDiscard) {
+            if (shouldDiscard == true) {
+              Navigator.of(context).pop(); 
+            }
+        });
+      },
+   
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true, 
+          title: InkWell(
+            onTap: _showEditRestTimerDialog, 
+            child: Row(
+              mainAxisSize: MainAxisSize.min, 
+              children: [
+                Icon(
+                  Icons.timer_outlined,
+                  color: timerColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  timerText,
+                  style: TextStyle(
+                    fontSize: 28, 
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onPrimary,
+                    fontFeatures: const [FontFeature.tabularFigures()], 
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: OutlinedButton.icon(
-                onPressed: _navigateAndAddExercise,
-                icon: const Icon(Icons.add),
-                label: const Text('Add exercise'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32), 
+          ),
+          actions: [
+             const SizedBox(width: 56), 
+          ],
+        ),
+        body: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: _workoutGroups.isEmpty
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text(
+                            'Press the "Start Workout" button down below to start',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                           ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 80),
+                        itemCount: _workoutGroups.length,
+                        itemBuilder: (context, index) {
+                          final group = _workoutGroups[index];
+                          return WorkoutGroupTile(
+                            key: ValueKey(group.exercise.id),
+                            group: group,
+                            onAddSet: () => _addSetToGroup(group),
+                            onDeleteSet: (setToDelete) => _deleteSetFromGroup(group, setToDelete),
+                            onReplaceExercise: () => _replaceExercise(group),
+                            onDeleteWorkout: () => _deleteWorkoutGroup(group),
+                            onToggleSetComplete: (setEntry, isCompleted) {
+                                if (mounted) {
+                                  setState(() {
+                                    setEntry.isCompleted = isCompleted;
+                                  });
+                                  if (isCompleted) {
+                                    _startRestTimer();
+                                  }
+                                }
+                            },  
+                          );
+                        },
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: OutlinedButton.icon(
+                  onPressed: _navigateAndAddExercise,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add exercise'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32), 
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (_workoutGroups.isNotEmpty)
-              SizedBox(height: 12,),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-                child: ElevatedButton(
-                  onPressed: viewModel.state == ViewState.Loading ? null : _finishWorkout,
-                  style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                  child: viewModel.state == ViewState.Loading
-                    ? const CircularProgressIndicator(color: Colors.white,)
-                    : const Text('Finish & Save Session'),
+              if (_workoutGroups.isNotEmpty)
+                SizedBox(height: 12,),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                  child: ElevatedButton(
+                    onPressed: viewModel.state == ViewState.Loading ? null : _finishWorkout,
+                    style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+                    child: viewModel.state == ViewState.Loading
+                      ? const CircularProgressIndicator(color: Colors.white,)
+                      : const Text('Finish & Save Session'),
+                  ),
                 ),
-              ),
-          ],
+                SizedBox(height: 32,)
+            ],
+          ),
         ),
       ),
     );
