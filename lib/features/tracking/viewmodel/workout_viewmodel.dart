@@ -50,6 +50,8 @@ class WorkoutViewModel extends ChangeNotifier {
         setsData: setsData,
         duration: duration,
         sessionStartTime: sessionStartTime,
+        notes: notes, 
+        bodyWeight: bodyWeight,
       );
       _setState(ViewState.Success); 
       success = true;
