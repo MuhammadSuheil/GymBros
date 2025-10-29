@@ -52,7 +52,7 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (context) => HistoryViewModel()),
         ChangeNotifierProvider(
-          create: (context) => StreakViewModel()..fetchStreakData(), 
+          create: (context) => StreakViewModel()..fetchAllStreakData()
         ),
       ],
       child: const MyAppEntryPoint(),

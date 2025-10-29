@@ -59,21 +59,19 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     );
 
     if (success && mounted) {
-      showInfoPopup(
+      final bool? result = await showInfoPopup(
         context,
         'Success!',
         'Your workout session has been saved successfully.',
-        onOkPressed: () {
-          // Navigasi KEMBALI KE ROOT (MainScreen)
-          // Ini akan menutup SummaryScreen DAN TrackingScreen
-          Navigator.of(context).pushAndRemoveUntil(
-             MaterialPageRoute(builder: (context) => const MainScreen()), 
-             (Route<dynamic> route) => false // Hapus semua rute sebelumnya
-          );
-        }
       );
+      
+      if (result == true && mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+           MaterialPageRoute(builder: (context) => const MainScreen()), 
+           (Route<dynamic> route) => false
+        );
+      }
     } else if (!success && mounted) {
-      // Ganti SnackBar dengan Popup
       showErrorPopup(context, 'Save Failed', viewModel.errorMessage);
     }
   }

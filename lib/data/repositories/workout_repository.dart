@@ -17,8 +17,7 @@ class WorkoutRepository {
     required DateTime sessionStartTime,
     String? notes,
     double? bodyWeight,
-  }) async { 
-  
+  }) async {
     if (setsData.isEmpty) { throw Exception('No set data to save.'); }
 
     final profileDocRef = _profilesCollection.doc(userId);
@@ -32,29 +31,26 @@ class WorkoutRepository {
     await FirebaseFirestore.instance.runTransaction((transaction) async {
        DocumentSnapshot profileSnapshot = await transaction.get(profileDocRef);
        int currentStreak = 0;
-       int longestStreak = 0;
+       int longestStreak = 0; 
        DateTime? lastWorkoutDate;
-       Map<String, dynamic> currentProfileData = {};
-
        if (profileSnapshot.exists) {
-         currentProfileData = profileSnapshot.data() as Map<String, dynamic>;
-         currentStreak = currentProfileData['currentStreak'] ?? 0;
-         longestStreak = currentProfileData['longestStreak'] ?? 0;
-         lastWorkoutDate = (currentProfileData['lastWorkoutDate'] as Timestamp?)?.toDate();
+         final data = profileSnapshot.data() as Map<String, dynamic>;
+         currentStreak = data['currentStreak'] ?? 0;
+         longestStreak = data['longestStreak'] ?? 0;
+         lastWorkoutDate = (data['lastWorkoutDate'] as Timestamp?)?.toDate();
        }
-
        int newStreak = 0;
        DateTime todayStart = DateTime(sessionStartTime.year, sessionStartTime.month, sessionStartTime.day);
        DateTime? lastWorkoutDayStart;
        if (lastWorkoutDate != null) { lastWorkoutDayStart = DateTime(lastWorkoutDate.year, lastWorkoutDate.month, lastWorkoutDate.day); }
-
        if (lastWorkoutDayStart != null) {
          int differenceInDays = todayStart.difference(lastWorkoutDayStart).inDays;
-         print("[Streak Logic] Today: $todayStart, Last Workout: $lastWorkoutDayStart, Difference: $differenceInDays days"); 
-         if (differenceInDays == 0) { newStreak = currentStreak; print("[Streak Logic] Same day. Streak remains: $newStreak"); }
-         else if (differenceInDays >= 1 && differenceInDays <= 4) { newStreak = currentStreak + 1; print("[Streak Logic] Consecutive/Tolerance. Streak increased: $newStreak"); }
-         else { newStreak = 1; print("[Streak Logic] Streak broken (>4 days). Resetting to: $newStreak"); }
-       } else { newStreak = 1; print("[Streak Logic] First workout. Starting streak: $newStreak"); }
+         print("[Streak Logic] Today: $todayStart, Last Workout: $lastWorkoutDayStart, Difference: $differenceInDays days");
+         if (differenceInDays == 0) { newStreak = currentStreak; }
+         else if (differenceInDays >= 1 && differenceInDays <= 4) { newStreak = currentStreak + 1; }
+         else { newStreak = 1; }
+       } else { newStreak = 1; }
+       print("[Streak Logic] Calculated newStreak: $newStreak");
 
        transaction.set(newSessionDocRef, {
          'userId': userId,
@@ -62,10 +58,10 @@ class WorkoutRepository {
          'endTime': Timestamp.fromDate(sessionEndTime),
          'durationSeconds': duration.inSeconds,
          'sets': setsData,
-         'notes': notes,
-         'bodyWeight': bodyWeight,
+         'notes': notes, 
+         'bodyWeight': bodyWeight, 
        });
-       print("[Transaction] Set session data completed with notes: '$notes', bodyWeight: $bodyWeight."); 
+       print("[Transaction] Set session data completed with notes: '$notes', bodyWeight: $bodyWeight.");
 
        bool shouldUpdateProfile = !profileSnapshot.exists || (lastWorkoutDayStart != null && todayStart.isAfter(lastWorkoutDayStart)) || lastWorkoutDayStart == null;
        if (shouldUpdateProfile) {
@@ -77,15 +73,10 @@ class WorkoutRepository {
              'longestStreak': newLongestStreak,
              'email': _firebaseAuth.currentUser?.email
           };
-          if (!profileSnapshot.exists) {
-             print("[Transaction] Profile does not exist. Creating with data: $profileUpdateData");
-             transaction.set(profileDocRef, profileUpdateData);
-          } else {
-             print("[Transaction] Profile exists. Updating with data: $profileUpdateData");
-             transaction.update(profileDocRef, profileUpdateData);
-          }
-          print("[Transaction] Profile update scheduled."); 
-       } else { print("[Transaction] Profile update skipped (same day workout)."); } 
+          if (!profileSnapshot.exists) { transaction.set(profileDocRef, profileUpdateData); }
+          else { transaction.update(profileDocRef, profileUpdateData); }
+          print("[Transaction] Profile update scheduled.");
+       } else { print("[Transaction] Profile update skipped."); }
 
     }).catchError((error, stackTrace) {
        print("===================================");
@@ -97,7 +88,6 @@ class WorkoutRepository {
        throw Exception('Transaction Failed: $error');
     });
   }
-
   Future<List<WorkoutSessionModel>> getWorkoutSessions() async {
      final user = _firebaseAuth.currentUser;
      if (user == null) { print("[WorkoutRepository] User not logged in..."); return []; }
