@@ -57,9 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 32),
           ElevatedButton(
-           child: 
-            Text('Start a new Workout!'),
-            style: ElevatedButton.styleFrom(
+           style: ElevatedButton.styleFrom(
               iconColor: AppColors.onPrimary,
               minimumSize: const Size.fromHeight(50), 
               textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
@@ -71,6 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             
             },
+           child: 
+            Text('Start a new Workout!'),
           ),
           const SizedBox(height: 32),
           Text(
@@ -92,11 +92,24 @@ class _HomeScreenState extends State<HomeScreen> {
        ));
      }
      if (viewModel.state == HistoryState.Error) {
-       return Center(child: Text('Failed to load history: ${viewModel.errorMessage}'));
-     }
-     if (viewModel.sessions.isEmpty) {
-       return const Center(child: Text('No recent workouts found.'));
-     }
+     return Center(
+        child: Text(
+          'Failed to load history: ${viewModel.errorMessage}',
+          style: TextStyle(color: AppColors.textSecondary), 
+        )
+      );
+   }
+   if (viewModel.sessions.isEmpty) {
+     return Center(
+       child: Text(
+         'No recent workouts found.',
+         style: TextStyle(
+            fontSize: 16,
+            color: AppColors.textSecondary, 
+         ),
+       )
+     );
+   }
      final recentSessions = viewModel.sessions.take(3).toList();
 
      return Column(

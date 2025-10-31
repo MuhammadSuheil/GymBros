@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:gymbros/core/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/services/notification_service.dart';
 
+// ViewModels
+import 'features/auth/viewmodel/auth_viewmodel.dart';
 import 'features/tracking/viewmodel/workout_viewmodel.dart';
 import 'features/exercise_selection/viewmodel/exercise_viewmodel.dart';
-import 'features/auth/viewmodel/auth_viewmodel.dart';
 import 'features/history/viewmodel/history_viewmodel.dart';
 import 'features/streak/viewmodel/streak_viewmodel.dart';
 
-import 'features/main_screen/main_screen.dart'; 
+// Screens
+import 'features/main_screen/main_screen.dart';
 import 'features/auth/view/login_screen.dart';
 
 const supabaseUrl = 'https://tbyjchwkedxhgkdefrco.supabase.co';
@@ -23,71 +25,93 @@ const supabaseKey = String.fromEnvironment('SUPABASE_KEY');
 
 final NotificationService notificationService = NotificationService();
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
   await initializeDateFormatting('en_US', null);
   await notificationService.initNotifications();
 
   try {
-     await sb.Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
-     await Firebase.initializeApp(
-       options: DefaultFirebaseOptions.currentPlatform,
-     );
-  } catch (e) { print("Error initializing services: $e"); }
+    await sb.Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(
-    MultiProvider( 
-      providers: [
-        Provider<NotificationService>.value(value: notificationService),
-        StreamProvider<fb.User?>.value( 
-          value: fb.FirebaseAuth.instance.authStateChanges(),
-          initialData: null,
-        ), 
-        ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        ChangeNotifierProvider(create: (context) => WorkoutViewModel()),
-        
-        ChangeNotifierProvider(
-          create: (context) => ExerciseViewModel()..fetchInitialExercises(),
-        ),
-        ChangeNotifierProvider(create: (context) => HistoryViewModel()),
-        ChangeNotifierProvider(create: (context) => StreakViewModel()),
-      ],
-      child: const MyAppEntryPoint(),
-    ),
-  );
+    runApp(
+      MultiProvider(
+        providers: [
+          Provider<NotificationService>.value(value: notificationService),
+          ChangeNotifierProvider(create: (_) => AuthViewModel()),
+          ChangeNotifierProvider(create: (_) => WorkoutViewModel()),
+          ChangeNotifierProvider(create: (_) => ExerciseViewModel()..fetchInitialExercises()),
+          ChangeNotifierProvider(create: (_) => HistoryViewModel()),
+          ChangeNotifierProvider(create: (_) => StreakViewModel()..fetchAllStreakData()),
+        ],
+        child: const GymBrosApp(),
+      ),
+    );
+  } catch (e) {
+    runApp(InitializationErrorApp(error: e.toString()));
+  }
 }
 
-class MyAppEntryPoint extends StatelessWidget {
-  const MyAppEntryPoint({super.key});
-   @override
+class InitializationErrorApp extends StatelessWidget {
+  final String error;
+  const InitializationErrorApp({super.key, required this.error});
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
-       debugShowCheckedModeBanner: false,
-       title: 'GymBros',
-       theme: AppTheme.darkTheme,
-       home: const AuthWrapper(),
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text(
+              'Failed to initialize app.\nError: $error',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GymBrosApp extends StatelessWidget {
+  const GymBrosApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'GymBros',
+      theme: AppTheme.darkTheme,
+      home: const AuthWrapper(),
     );
   }
 }
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
-   @override
+
+  @override
   Widget build(BuildContext context) {
-     final fb.User? user = context.watch<fb.User?>();
+    final fb.FirebaseAuth auth = fb.FirebaseAuth.instance;
 
-     print("[AuthWrapper] Build method called.");
-     print("[AuthWrapper] User state from provider: ${user?.uid ?? 'null'}");
+    return StreamBuilder<fb.User?>(
+      stream: auth.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
 
+        // Jika user login
+        if (snapshot.hasData && snapshot.data != null) {
+          return const MainScreen();
+        }
 
-     if (user != null) {
-       print("[AuthWrapper] State: User logged in (${user.uid}), showing MainScreen.");
-       return const MainScreen();
-     } else {
-       print("[AuthWrapper] State: No user logged in, showing LoginScreen.");
-       return const LoginScreen();
-     }
+        // Jika user logout
+        return const LoginScreen();
+      },
+    );
   }
 }
-

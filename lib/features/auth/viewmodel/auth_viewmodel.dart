@@ -13,7 +13,20 @@ class AuthViewModel extends ChangeNotifier {
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
-  fb.User? get currentUser => _authRepository.currentUser;
+  fb.User? _currentUser;
+  fb.User? get currentUser => _currentUser;
+
+  AuthViewModel() {
+    _currentUser = _authRepository.currentUser; 
+
+    _authRepository.authStateChanges.listen((fb.User? user) {
+      print("[AuthViewModel] Auth state changed via listener: ${user?.uid ?? 'null'}");
+      
+      _currentUser = user; 
+      
+      notifyListeners(); 
+    });
+  }
 
   void _setState(AuthState newState) {
     if (_state != newState) {
@@ -29,22 +42,22 @@ class AuthViewModel extends ChangeNotifier {
   }) async {
     print("[AuthViewModel] Attempting sign in for: $email");
     _setState(AuthState.Loading);
-    bool success = false; 
+    bool success = false;
     try {
       await _authRepository.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       print("[AuthViewModel] Sign in successful for: $email");
-      success = true; 
-      _setState(AuthState.Idle);
+      success = true;
+      _setState(AuthState.Idle); 
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       print("[AuthViewModel] Sign in failed: $_errorMessage");
       _setState(AuthState.Error);
-      success = false; 
+      success = false;
     }
-    return success; 
+    return success;
   }
   
   Future<bool> createUserWithEmail({
@@ -61,7 +74,7 @@ class AuthViewModel extends ChangeNotifier {
       );
        print("[AuthViewModel] Registration successful for: $email");
        success = true;
-       _setState(AuthState.Idle);
+       _setState(AuthState.Idle); 
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       print("[AuthViewModel] Registration failed: $_errorMessage");
@@ -70,13 +83,11 @@ class AuthViewModel extends ChangeNotifier {
     }
      return success;
   }
-  
-
-
+    
    void resetErrorState() {
-      if (_state == AuthState.Error) {
-         _setState(AuthState.Idle);
-      }
+     if (_state == AuthState.Error) {
+        _setState(AuthState.Idle);
+     }
    }
 
   Future<void> signOut() async {
@@ -84,9 +95,8 @@ class AuthViewModel extends ChangeNotifier {
     _setState(AuthState.Loading);
     try {
       await _authRepository.signOut();
-       print("[AuthViewModel] Sign out successful.");
-       _setState(AuthState.Idle);
-       
+      _setState(AuthState.Idle);
+      print("[AuthViewModel] Sign out successful.");
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
        print("[AuthViewModel] Sign out failed: $_errorMessage");

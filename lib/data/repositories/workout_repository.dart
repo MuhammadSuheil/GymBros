@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/workout_session_model.dart'; 
-import 'package:collection/collection.dart'; 
+// Import 'collection' jika Anda masih menggunakan extension methods
+// import 'package:collection/collection.dart'; 
 
 class WorkoutRepository {
   final CollectionReference _sessionsCollection =
@@ -18,6 +19,7 @@ class WorkoutRepository {
     String? notes,
     double? bodyWeight,
   }) async {
+    // ... (Logika addWorkoutSession yang sudah benar) ...
     if (setsData.isEmpty) { throw Exception('No set data to save.'); }
 
     final profileDocRef = _profilesCollection.doc(userId);
@@ -33,19 +35,21 @@ class WorkoutRepository {
        int currentStreak = 0;
        int longestStreak = 0; 
        DateTime? lastWorkoutDate;
+
        if (profileSnapshot.exists) {
          final data = profileSnapshot.data() as Map<String, dynamic>;
          currentStreak = data['currentStreak'] ?? 0;
-         longestStreak = data['longestStreak'] ?? 0;
+         longestStreak = data['longestStreak'] ?? 0; // Baca longest streak
          lastWorkoutDate = (data['lastWorkoutDate'] as Timestamp?)?.toDate();
        }
+
        int newStreak = 0;
        DateTime todayStart = DateTime(sessionStartTime.year, sessionStartTime.month, sessionStartTime.day);
        DateTime? lastWorkoutDayStart;
        if (lastWorkoutDate != null) { lastWorkoutDayStart = DateTime(lastWorkoutDate.year, lastWorkoutDate.month, lastWorkoutDate.day); }
+
        if (lastWorkoutDayStart != null) {
          int differenceInDays = todayStart.difference(lastWorkoutDayStart).inDays;
-         print("[Streak Logic] Today: $todayStart, Last Workout: $lastWorkoutDayStart, Difference: $differenceInDays days");
          if (differenceInDays == 0) { newStreak = currentStreak; }
          else if (differenceInDays >= 1 && differenceInDays <= 4) { newStreak = currentStreak + 1; }
          else { newStreak = 1; }
@@ -58,19 +62,19 @@ class WorkoutRepository {
          'endTime': Timestamp.fromDate(sessionEndTime),
          'durationSeconds': duration.inSeconds,
          'sets': setsData,
-         'notes': notes, 
-         'bodyWeight': bodyWeight, 
+         'notes': notes,
+         'bodyWeight': bodyWeight,
        });
        print("[Transaction] Set session data completed with notes: '$notes', bodyWeight: $bodyWeight.");
 
        bool shouldUpdateProfile = !profileSnapshot.exists || (lastWorkoutDayStart != null && todayStart.isAfter(lastWorkoutDayStart)) || lastWorkoutDayStart == null;
        if (shouldUpdateProfile) {
-          int newLongestStreak = (newStreak > longestStreak) ? newStreak : longestStreak;
+          int newLongestStreak = (newStreak > longestStreak) ? newStreak : longestStreak; // Hitung longest streak baru
           Map<String, dynamic> profileUpdateData = {
              'userId': userId,
              'lastWorkoutDate': Timestamp.fromDate(sessionStartTime),
              'currentStreak': newStreak,
-             'longestStreak': newLongestStreak,
+             'longestStreak': newLongestStreak, // Simpan longest streak
              'email': _firebaseAuth.currentUser?.email
           };
           if (!profileSnapshot.exists) { transaction.set(profileDocRef, profileUpdateData); }
@@ -88,6 +92,7 @@ class WorkoutRepository {
        throw Exception('Transaction Failed: $error');
     });
   }
+
   Future<List<WorkoutSessionModel>> getWorkoutSessions() async {
      final user = _firebaseAuth.currentUser;
      if (user == null) { print("[WorkoutRepository] User not logged in..."); return []; }
@@ -105,34 +110,37 @@ class WorkoutRepository {
      } catch (e) { print('[WorkoutRepository] Error fetching sessions: $e'); throw Exception('Error fetching Workout History'); }
    }
 
+  // --- PASTIKAN FUNGSI INI MENGEMBALIKAN 'longestStreak' ---
   Future<Map<String, dynamic>> getUserStreakData() async {
      final user = _firebaseAuth.currentUser;
-     if (user == null) return {'currentStreak': 0, 'lastWorkoutDate': null};
+     if (user == null) return {'currentStreak': 0, 'lastWorkoutDate': null, 'longestStreak': 0};
+
      try {
        final profileDoc = await _profilesCollection.doc(user.uid).get();
        if (profileDoc.exists) {
           final data = profileDoc.data() as Map<String, dynamic>;
           DateTime? lastWorkoutDate = (data['lastWorkoutDate'] as Timestamp?)?.toDate();
           int currentStreak = data['currentStreak'] ?? 0;
+          int longestStreak = data['longestStreak'] ?? 0; // Ambil longest streak
+
           if (lastWorkoutDate != null) {
              DateTime todayStart = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
              DateTime lastWorkoutDayStart = DateTime(lastWorkoutDate.year, lastWorkoutDate.month, lastWorkoutDate.day);
              int differenceInDays = todayStart.difference(lastWorkoutDayStart).inDays;
              if (differenceInDays > 4) { currentStreak = 0; }
           }
-          return {'currentStreak': currentStreak, 'lastWorkoutDate': lastWorkoutDate};
-       } else { return {'currentStreak': 0, 'lastWorkoutDate': null}; }
-     } catch (e) { print("[Streak Logic] Error fetching streak data: $e"); return {'currentStreak': 0, 'lastWorkoutDate': null}; }
-   }
-}
-extension Unique<E, Id> on List<E> {
-  List<E> distinctBy(Id Function(E element) id) {
-    final seen = <Id>{};
-    return where((element) => seen.add(id(element))).toList();
+          return {
+            'currentStreak': currentStreak, 
+            'lastWorkoutDate': lastWorkoutDate,
+            'longestStreak': longestStreak, // Kembalikan longest streak
+          };
+       } else {
+          return {'currentStreak': 0, 'lastWorkoutDate': null, 'longestStreak': 0};
+       }
+     } catch (e) {
+        print("[Streak Logic] Error fetching streak data: $e");
+        return {'currentStreak': 0, 'lastWorkoutDate': null, 'longestStreak': 0};
+     }
   }
-}
-extension Sort<E> on List<E> {
-  List<E> sortedBy<T extends Comparable>(T Function(E e) key) =>
-      toList()..sort((a, b) => key(a).compareTo(key(b)));
 }
 

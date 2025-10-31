@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'register_screen.dart';
 import '../viewmodel/auth_viewmodel.dart';
-import '../../tracking/view/workout_tracking_screen.dart';
 import '../../../core/widgets/dialogs.dart';
 import 'package:gymbros/core/constants/app_colors.dart';
 import '../../main_screen/main_screen.dart';
@@ -28,29 +27,19 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin(BuildContext context) async { 
-    print("[LoginScreen] Login button pressed.");
-    final viewModel = Provider.of<AuthViewModel>(context, listen: false);
-    viewModel.resetErrorState();
+  void _handleLogin(BuildContext context) async {
+  print("[LoginScreen] Login button pressed.");
+  final viewModel = Provider.of<AuthViewModel>(context, listen: false);
+  viewModel.resetErrorState();
 
-    if (_formKey.currentState!.validate()) {
-       print("[LoginScreen] Form valid, calling ViewModel...");
-       
-       bool success = await viewModel.signInWithEmail(
-         email: _emailController.text.trim(),
-         password: _passwordController.text.trim(),
-       );
-       if (success && mounted) {
-          print("[LoginScreen] Login success, navigating to Main App.");
-          Navigator.pushReplacement(
-             context,
-             MaterialPageRoute(builder: (context) => const MainScreen()) 
-          );
-       }
-    } else {
-       print("[LoginScreen] Form invalid.");
-    }
+  if (_formKey.currentState!.validate()) {
+    bool success = await viewModel.signInWithEmail(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
           body: Center( child: SingleChildScrollView( padding: const EdgeInsets.all(24.0),
               child: Form( key: _formKey, child: Column(
                    children: [
+                    SizedBox(height: 60,),
                     Column(
                       children: [
                         Image.asset('assets/images/notxt.png', height: 60,),

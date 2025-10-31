@@ -448,11 +448,11 @@ class _WorkoutTrackingScreenState extends State<WorkoutTrackingScreen> {
                   },
                 ),
                 TextButton(
-                  child: const Text('Yes, Discard'),
                   style: TextButton.styleFrom(foregroundColor: Colors.red),
                   onPressed: () {
                     Navigator.of(context).pop(true); 
                   },
+                  child: const Text('Yes, Discard'),
                 ),
               ],
             );
@@ -778,10 +778,10 @@ class SetRow extends StatelessWidget {
                     return Colors.transparent; 
                   },
                 ),
-                checkColor: MaterialStateProperty.resolveWith<Color?>(
+                checkColor: WidgetStateProperty.resolveWith<Color?>(
                   (states) {
-                    if (states.contains(MaterialState.disabled)) return Colors.grey;
-                    if (states.contains(MaterialState.selected)) return Colors.white;
+                    if (states.contains(WidgetState.disabled)) return Colors.grey;
+                    if (states.contains(WidgetState.selected)) return Colors.white;
                     return Colors.white; 
                   },
                 ), 

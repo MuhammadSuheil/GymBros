@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gymbros/core/constants/app_colors.dart';
-import 'package:provider/provider.dart';
 import '../../core/widgets/hexagon_clipper.dart';
 import '../home/view/home_screen.dart';
 import '../history/view/history_screen.dart';
