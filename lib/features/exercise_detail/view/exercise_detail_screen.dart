@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/exercise_model.dart';
+import 'package:gymbros/core/constants/app_colors.dart'; 
 
 class ExerciseDetailScreen extends StatelessWidget {
   final ExerciseModel exercise;
@@ -17,7 +18,6 @@ class ExerciseDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             Center(
               child: Image.network(
                 exercise.imageUrl,
@@ -42,11 +42,12 @@ class ExerciseDetailScreen extends StatelessWidget {
             _buildDetailRow('Target Muscle:', exercise.target ?? 'N/A'),
             _buildDetailRow('Equipment:', exercise.equipment ?? 'N/A'),
             const SizedBox(height: 16),
-            const Divider(),
+            const Divider(color: AppColors.divider),
             const SizedBox(height: 16),
             Text(
-              'Instruksi:',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Instructions',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24, color: AppColors.onPrimary),
+              
             ),
             const SizedBox(height: 10),
             
@@ -60,8 +61,8 @@ class ExerciseDetailScreen extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${index + 1}. ', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Expanded(child: Text(exercise.instructions[index])),
+                      Text('${index + 1}. ', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.onPrimary)),
+                      Expanded(child: Text(exercise.instructions[index], style: const TextStyle(color: AppColors.onPrimary))),
                     ],
                   ),
                 );
@@ -79,8 +80,8 @@ class ExerciseDetailScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$label ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Expanded(child: Text(value)),
+          Text('$label ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.onPrimary)),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 14, color: AppColors.onPrimary))),
         ],
       ),
     );

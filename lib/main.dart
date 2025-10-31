@@ -40,20 +40,18 @@ void main() async {
     MultiProvider( 
       providers: [
         Provider<NotificationService>.value(value: notificationService),
-
-        ChangeNotifierProvider(create: (context) => AuthViewModel()),
         StreamProvider<fb.User?>.value( 
           value: fb.FirebaseAuth.instance.authStateChanges(),
           initialData: null,
-        ),
+        ), 
+        ChangeNotifierProvider(create: (context) => AuthViewModel()),
         ChangeNotifierProvider(create: (context) => WorkoutViewModel()),
+        
         ChangeNotifierProvider(
           create: (context) => ExerciseViewModel()..fetchInitialExercises(),
         ),
         ChangeNotifierProvider(create: (context) => HistoryViewModel()),
-        ChangeNotifierProvider(
-          create: (context) => StreakViewModel()..fetchAllStreakData()
-        ),
+        ChangeNotifierProvider(create: (context) => StreakViewModel()),
       ],
       child: const MyAppEntryPoint(),
     ),

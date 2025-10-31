@@ -1,15 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Model untuk merepresentasikan satu dokumen sesi latihan dari Firestore
 class WorkoutSessionModel {
-  final String id; // ID Dokumen Firestore
+  final String id; 
   final String userId;
   final DateTime startTime;
   final DateTime endTime;
   final int durationSeconds;
   final List<dynamic> sets; 
-  final String? notes; // Field sudah ada
-  final double? bodyWeight; // Field sudah ada
+  final String? notes; 
+  final double? bodyWeight; 
 
   WorkoutSessionModel({
     required this.id,

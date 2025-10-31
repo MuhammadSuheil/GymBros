@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:gymbros/core/constants/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'login_screen.dart';
@@ -58,12 +60,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 16),
                   Text(
                     'Registrasi Berhasil!',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onPrimary),
                   ),
                    SizedBox(height: 8),
                   Text(
                     'Silakan login dengan akun baru Anda.',
                     textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.onPrimary),
                   ),
                 ],
               ),
@@ -102,24 +105,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
 
         return Scaffold(
-           appBar: AppBar( title: const Text('Daftar Akun GymBros'), automaticallyImplyLeading: false,),
            body: Center( child: SingleChildScrollView( padding: const EdgeInsets.all(24.0),
               child: Form( key: _formKey, child: Column(
                    children: [
-                    Text( 'Buat Akun Baru', style: Theme.of(context).textTheme.headlineMedium, textAlign: TextAlign.center,),
+                    SizedBox(height: 60,),
+                    Column(
+                      children: [
+                        Image.asset('assets/images/notxt.png', height: 60,),
+                        Image.asset('assets/images/gymbrostxt.png', height: 120,),
+                        const SizedBox(height: 28),
+                      ],
+                    ),
+                    Text( 'Account register', style:  TextStyle(color: AppColors.onPrimary, fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center,),
                     const SizedBox(height: 32),
-                    TextFormField( controller: _emailController, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)), keyboardType: TextInputType.emailAddress, validator: (value) { if (value == null || value.isEmpty || !value.contains('@')) { return 'Masukkan email yang valid'; } return null; },),
+                    TextFormField(style: TextStyle(color: AppColors.onPrimary), controller: _emailController, decoration: const InputDecoration(labelText: 'Email',prefixIcon: Icon(Icons.email_outlined, color: AppColors.onSecondary)), keyboardType: TextInputType.emailAddress, validator: (value) { if (value == null || value.isEmpty || !value.contains('@')) { return 'Please enter a valid email'; } return null; },),
                     const SizedBox(height: 16),
-                    TextFormField( controller: _passwordController, decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock_outline)), obscureText: true, validator: (value) { if (value == null || value.isEmpty || value.length < 6) { return 'Password minimal 6 karakter'; } return null; },),
+                    TextFormField(style: TextStyle(color: AppColors.onPrimary), controller: _passwordController, decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock_outline, color: AppColors.onSecondary)), obscureText: true, validator: (value) { if (value == null || value.isEmpty || value.length < 6) { return 'Password minimum 6 character'; } return null; },),
                     const SizedBox(height: 16),
-                     TextFormField( controller: _confirmPasswordController, decoration: const InputDecoration(labelText: 'Konfirmasi Password', prefixIcon: Icon(Icons.lock_reset_outlined)), obscureText: true, validator: (value) { if (value == null || value.isEmpty) { return 'Konfirmasi password tidak boleh kosong'; } if (value != _passwordController.text) { return 'Password tidak cocok'; } return null; },),
+                     TextFormField(style: TextStyle(color: AppColors.onPrimary), controller: _confirmPasswordController, decoration: const InputDecoration(labelText: 'Confirm Password', prefixIcon: Icon(Icons.lock_reset_outlined,color: AppColors.onSecondary)), obscureText: true, validator: (value) { if (value == null || value.isEmpty) { return 'Confirm password cannot be empty'; } if (value != _passwordController.text) { return 'Password doesnt'; } return null; },),
                     const SizedBox(height: 24),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        fixedSize: const Size(700, 50),
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                       onPressed: viewModel.state == AuthState.Loading ? null : () => _handleRegister(context),
                       child: viewModel.state == AuthState.Loading ? const SizedBox( height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),) : const Text('Daftar'),
                     ),
                      const SizedBox(height: 16),
-                    TextButton( onPressed: viewModel.state == AuthState.Loading ? null : () { Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => const LoginScreen()), ); }, child: const Text('Sudah punya akun? Login di sini'),),
+                    TextButton( onPressed: viewModel.state == AuthState.Loading ? null : () { Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => const LoginScreen()), ); }, child: 
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Already have an account?',
+                            style:  GoogleFonts.outfit(
+                              color: AppColors.onPrimary, 
+                              fontSize: 16,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' Login here',
+                            style:  GoogleFonts.outfit(
+                              color: AppColors.primary, 
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold, 
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),),
                   ],
               ),),
            ),),

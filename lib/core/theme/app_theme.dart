@@ -39,7 +39,7 @@ class AppTheme {
           backgroundColor: AppColors.primary, 
           foregroundColor: AppColors.onPrimary, 
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-          textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32.0)), 
         ),
       ),
@@ -48,14 +48,14 @@ class AppTheme {
            foregroundColor: AppColors.onPrimary, 
            side: const BorderSide(color: AppColors.primary),
            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-           textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+           textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600),
            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
          )
       ),
        textButtonTheme: TextButtonThemeData(
          style: TextButton.styleFrom(
            foregroundColor: AppColors.primary,
-            textStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+            textStyle: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600),
          )
        ),
 
@@ -76,8 +76,8 @@ class AppTheme {
            borderRadius: BorderRadius.circular(32.0),
            borderSide: const BorderSide(color: Colors.transparent),
         ),
-        labelStyle: GoogleFonts.poppins(color: AppColors.textSecondary),
-        hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
+        labelStyle: GoogleFonts.outfit(color: AppColors.textSecondary),
+        hintStyle: GoogleFonts.outfit(color: Colors.grey.shade400),
       ),
 
       
