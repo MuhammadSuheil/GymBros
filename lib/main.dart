@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'core/services/notification_service.dart';
 
@@ -26,7 +27,9 @@ const supabaseKey = String.fromEnvironment('SUPABASE_KEY');
 final NotificationService notificationService = NotificationService();
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   await initializeDateFormatting('en_US', null);
   await notificationService.initNotifications();
 
@@ -90,8 +93,19 @@ class GymBrosApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    FlutterNativeSplash.remove();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,15 +115,13 @@ class AuthWrapper extends StatelessWidget {
       stream: auth.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
-
-        // Jika user login
         if (snapshot.hasData && snapshot.data != null) {
           return const MainScreen();
         }
-
-        // Jika user logout
         return const LoginScreen();
       },
     );

@@ -1,0 +1,13 @@
+flutter_native_splash:
+  color: "#C80025"
+  image: assets/images/logofull.png
+  android: true
+  ios: true
+  web: false
+  android_gravity: center
+  ios_content_mode: scale_to_fill
+
+  android_12:
+    color: "#C80025"
+    image: assets/images/logofull.png
+    branding: "assets/images/brandtxt.png"
