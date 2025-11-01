@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 
@@ -24,8 +25,9 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
-         print('Notification (foreground/bg) tap: ${notificationResponse.payload}');
-         // TODO: Tambahkan navigasi jika perlu
+         if (kDebugMode) {
+           debugPrint('Notification (foreground/bg) tap: ${notificationResponse.payload}');
+         }
       },
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );

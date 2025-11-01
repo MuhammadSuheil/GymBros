@@ -49,3 +49,7 @@ android/app/google-services.json
 exercises_data.json
 /gymbros-data-script/
 /.vscode/
+
+# Firebase files
+/android/app/google-services.json
+/lib/firebase_options.dart
